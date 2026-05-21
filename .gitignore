@@ -1,0 +1,26 @@
+# Xcode / SwiftUI
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+build/
+
+# React Native
+node_modules/
+.bundle/
+ios/build/
+android/build/
+android/app/build/
+android/local.properties
+*.keystore
+!debug.keystore
+.gradle/
+*.jks
+
+# Env
+.env
+.env.local
+
+# macOS
+.DS_Store
