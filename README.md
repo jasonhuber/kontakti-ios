@@ -1,6 +1,6 @@
-# Konataki iOS
+# Kontakti iOS
 
-Mobile client for the Konataki personal CRM.
+Mobile client for the Kontakti personal CRM.
 
 ## Strategy
 
@@ -12,7 +12,7 @@ Shares API client, TypeScript types, and business logic hooks with the web front
 
 ```
 iOS/
-└── KonatakiMobile/     React Native project
+└── KontaktiMobile/     React Native project
     ├── src/
     │   ├── api/        same api.ts from Website/frontend/src/lib
     │   ├── screens/    native screens
@@ -25,7 +25,7 @@ iOS/
 
 **Setup:**
 ```bash
-npx @react-native-community/cli init KonatakiMobile --template react-native-template-typescript
+npx @react-native-community/cli init KontaktiMobile --template react-native-template-typescript
 ```
 
 ### Option B: SwiftUI
@@ -34,8 +34,8 @@ Full native experience. More work, no code sharing with web.
 
 ```
 iOS/
-└── KonatakiApp.xcodeproj
-    └── KonatakiApp/
+└── KontaktiApp.xcodeproj
+    └── KontaktiApp/
         ├── Models/
         ├── Views/
         ├── ViewModels/
