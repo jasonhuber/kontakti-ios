@@ -59,7 +59,7 @@ struct MainTabView: View {
                     }
             }
             .tabItem {
-                Label("Discussions", systemImage: "bubble.left.and.bubble.right")
+                Label("Discussions", systemImage: "point.3.connected.trianglepath.dotted")
             }
             .tag(2)
 
