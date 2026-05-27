@@ -140,7 +140,8 @@ private struct SearchResultRowView: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
-                if let subtitle = result.subtitle, !subtitle.isEmpty {
+                if !result.subtitle.isEmpty {
+                    let subtitle = result.subtitle
                     Text(subtitle)
                         .font(.caption)
                         .foregroundColor(.secondary)

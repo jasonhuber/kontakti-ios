@@ -8,10 +8,16 @@ struct PersonCardView: View {
             AvatarView(name: person.fullName, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(person.fullName)
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                HStack(spacing: 6) {
+                    Text(person.fullName)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    if person.doNotContact {
+                        DNCBadge(reason: person.doNotContactReason)
+                    }
+                }
 
                 if let title = person.title, let company = person.company {
                     Text("\(title) · \(company.name)")

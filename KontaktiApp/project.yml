@@ -1,12 +1,23 @@
 name: KontaktiApp
 options:
-  bundleIdPrefix: com.jasonhuber
+  bundleIdPrefix: app.kontakti
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    DEVELOPMENT_TEAM: ""
+    # Sustav LC team ID. If a separate Sustav LLC Apple Developer enrollment exists,
+    # swap this with that team's 10-char ID. Currently set to the only signing identity
+    # installed on this Mac (JASON JOHN HUBER team).
+    DEVELOPMENT_TEAM: 4PP234HMPG
+    CODE_SIGN_STYLE: Automatic
+    # iPhone-only. Do NOT enable iPad, Mac Catalyst, or Vision Pro.
+    # TARGETED_DEVICE_FAMILY: 1=iPhone, 2=iPad, 6=Mac, 7=Vision.
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_MACCATALYST: "NO"
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
 packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
@@ -20,6 +31,10 @@ targets:
     dependencies:
       - package: GoogleSignIn
         product: GoogleSignIn
+      - target: KontaktiShare
+        embed: true
+      - target: KontaktiWidget
+        embed: true
     info:
       path: KontaktiApp/Info.plist
       properties:
@@ -31,14 +46,97 @@ targets:
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         NSContactsUsageDescription: Kontakti imports your contacts to help you track relationships.
+        NSMicrophoneUsageDescription: Kontakti uses the microphone to capture voice memos that auto-create CRM notes and tasks.
+        UIBackgroundModes:
+          - audio
+          - remote-notification
         GIDClientID: $(GOOGLE_IOS_CLIENT_ID)
         CFBundleURLTypes:
           - CFBundleURLSchemes:
               - $(GOOGLE_IOS_REVERSED_CLIENT_ID)
+          - CFBundleURLName: app.kontakti.scheme
+            CFBundleURLSchemes:
+              - kontakti
+        LSApplicationQueriesSchemes:
+          - instagram
+          - fb
+          - whatsapp
+          - tg
+    entitlements:
+      path: KontaktiApp/KontaktiApp.entitlements
+      properties:
+        aps-environment: development
+        com.apple.security.application-groups:
+          - group.app.kontakti
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.jasonhuber.KontaktiApp
+        PRODUCT_BUNDLE_IDENTIFIER: app.kontakti
         INFOPLIST_FILE: KontaktiApp/Info.plist
+        CODE_SIGN_ENTITLEMENTS: KontaktiApp/KontaktiApp.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: "NO"
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         GOOGLE_IOS_CLIENT_ID: 332466044306-cc6ur5d1il4g7fcpknpa51pjotupmhad.apps.googleusercontent.com
         GOOGLE_IOS_REVERSED_CLIENT_ID: com.googleusercontent.apps.332466044306-cc6ur5d1il4g7fcpknpa51pjotupmhad
+
+  KontaktiShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KontaktiShare
+    info:
+      path: KontaktiShare/Info.plist
+      properties:
+        CFBundleDisplayName: Kontakti
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+              NSExtensionActivationSupportsText: true
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.kontakti.share
+        INFOPLIST_FILE: KontaktiShare/Info.plist
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: "NO"
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+
+  KontaktiWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KontaktiWidget
+    info:
+      path: KontaktiWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Kontakti Today
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: KontaktiWidget/KontaktiWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.app.kontakti
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.kontakti.widget
+        INFOPLIST_FILE: KontaktiWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: KontaktiWidget/KontaktiWidget.entitlements
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: "NO"
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"

@@ -22,9 +22,15 @@ struct ContentView: View {
                     }
                 }
             } else if authVM.isAuthenticated {
-                MainTabView()
+                if authVM.needsOnboarding {
+                    OnboardingView()
+                } else {
+                    MainTabView()
+                }
             } else {
-                LoginView()
+                NavigationStack {
+                    LoginView()
+                }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: authVM.isAuthenticated)

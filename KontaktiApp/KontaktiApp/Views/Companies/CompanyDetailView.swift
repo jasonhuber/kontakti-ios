@@ -85,7 +85,20 @@ struct CompanyDetailView: View {
                                 ForEach(people) { person in
                                     NavigationLink(value: person) {
                                         VStack(spacing: 6) {
-                                            AvatarView(name: person.fullName, size: 48)
+                                            ZStack(alignment: .bottomTrailing) {
+                                                AvatarView(name: person.fullName, size: 48)
+                                                if person.doNotContact {
+                                                    Image(systemName: "nosign")
+                                                        .font(.system(size: 10, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                        .padding(3)
+                                                        .background(Color.red)
+                                                        .clipShape(Circle())
+                                                        .overlay(Circle().stroke(Color(.systemGroupedBackground), lineWidth: 1.5))
+                                                        .offset(x: 2, y: 2)
+                                                        .accessibilityLabel("Do not contact")
+                                                }
+                                            }
                                             Text(person.firstName)
                                                 .font(.caption)
                                                 .foregroundColor(.primary)

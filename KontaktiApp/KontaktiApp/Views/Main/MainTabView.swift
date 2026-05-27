@@ -2,13 +2,30 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var deepLink: DeepLinkRouter
+    @StateObject private var todayVM = TodayViewModel()
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var selectedTab = 0
     @State private var showingSearch = false
+    @State private var showingVoiceRecorder = false
 
     private let indigo = Color(red: 0.31, green: 0.27, blue: 0.90)
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            NavigationStack {
+                TodayView(vm: todayVM)
+                    .navigationDestination(for: Person.self) { p in
+                        PersonDetailView(person: p)
+                    }
+            }
+            .tabItem {
+                Label("Today", systemImage: "tray.full")
+            }
+            .badge(todayVM.count == 0 ? 0 : todayVM.count)
+            .tag(0)
+
             NavigationStack {
                 PeopleListView()
                     .toolbar {
@@ -25,7 +42,7 @@ struct MainTabView: View {
             .tabItem {
                 Label("People", systemImage: "person.2")
             }
-            .tag(0)
+            .tag(1)
 
             NavigationStack {
                 CompaniesListView()
@@ -43,7 +60,7 @@ struct MainTabView: View {
             .tabItem {
                 Label("Companies", systemImage: "building.2")
             }
-            .tag(1)
+            .tag(2)
 
             NavigationStack {
                 DiscussionsListView()
@@ -61,7 +78,7 @@ struct MainTabView: View {
             .tabItem {
                 Label("Discussions", systemImage: "point.3.connected.trianglepath.dotted")
             }
-            .tag(2)
+            .tag(3)
 
             NavigationStack {
                 FeedView()
@@ -79,13 +96,58 @@ struct MainTabView: View {
             .tabItem {
                 Label("Feed", systemImage: "list.bullet.rectangle")
             }
-            .tag(3)
+            .tag(4)
+
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
+            .tag(5)
         }
         .tint(indigo)
+        .overlay(alignment: .bottomTrailing) {
+            // Floating voice-memo FAB — visible across all tabs.
+            Button {
+                showingVoiceRecorder = true
+            } label: {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 56, height: 56)
+                    .background(indigo)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.18), radius: 6, x: 0, y: 3)
+            }
+            .padding(.trailing, 20)
+            // Lifted above the tab bar.
+            .padding(.bottom, 76)
+            .accessibilityLabel("Record voice memo")
+        }
+        .sheet(isPresented: $showingVoiceRecorder) {
+            VoiceRecordingView()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .kontaktiPresentVoiceRecorder)) { _ in
+            showingVoiceRecorder = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .kontaktiTodayShouldRefresh)) { _ in
+            Task { await todayVM.load() }
+        }
         .sheet(isPresented: $showingSearch) {
-            SearchView { result in
+            SearchView { _ in
                 showingSearch = false
-                // Navigation to result is handled inside SearchView or caller
+            }
+        }
+        // Share-extension deep link: kontakti://link-social?…
+        .sheet(item: $deepLink.pendingLinkSocial) { payload in
+            LinkSocialPickerView(payload: payload) { _ in
+                deepLink.clearPendingLinkSocial()
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                Task { await todayVM.load() }
             }
         }
     }
@@ -94,4 +156,5 @@ struct MainTabView: View {
 #Preview {
     MainTabView()
         .environmentObject(AuthViewModel())
+        .environmentObject(DeepLinkRouter.shared)
 }

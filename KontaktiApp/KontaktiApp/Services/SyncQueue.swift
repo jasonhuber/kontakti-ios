@@ -65,7 +65,7 @@ actor SyncQueue {
     private let api = APIClient.shared
 
     private init() {
-        queue = (try? load()) ?? []
+        queue = (try? Self.load(from: fileURL)) ?? []
     }
 
     // MARK: - Enqueue
@@ -113,7 +113,7 @@ actor SyncQueue {
         try data.write(to: fileURL, options: .atomic)
     }
 
-    private func load() throws -> [PendingMutation] {
+    private static func load(from fileURL: URL) throws -> [PendingMutation] {
         let data = try Data(contentsOf: fileURL)
         return try JSONDecoder().decode([PendingMutation].self, from: data)
     }

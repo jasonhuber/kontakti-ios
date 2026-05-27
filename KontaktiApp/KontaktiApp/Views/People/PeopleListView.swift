@@ -117,6 +117,12 @@ struct PeopleListView: View {
                     } label: {
                         Label("Import from Gmail", systemImage: "envelope")
                     }
+
+                    Button {
+                        vm.showLinkedInImport = true
+                    } label: {
+                        Label("Import from LinkedIn", systemImage: "link.badge.plus")
+                    }
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                 }
@@ -129,6 +135,12 @@ struct PeopleListView: View {
         }
         .task {
             await vm.load()
+        }
+        // LinkedIn import sheet
+        .sheet(isPresented: $vm.showLinkedInImport) {
+            LinkedInImportView {
+                Task { await vm.load(reset: true) }
+            }
         }
         // Import candidates sheet
         .sheet(isPresented: $vm.showingImportSheet) {

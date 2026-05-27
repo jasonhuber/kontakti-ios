@@ -76,33 +76,35 @@ Add to `Info.plist`:
 <string>Kontakti imports your contacts to help you track relationships.</string>
 ```
 
-### 3. Google Sign-In (optional — for Gmail import)
+### 3. Google Sign-In
 
 1. Create an OAuth 2.0 client ID in [Google Cloud Console](https://console.cloud.google.com/) (iOS app type).
-2. Add to `Info.plist`:
-   ```xml
-   <key>GIDClientID</key>
-   <string>YOUR_CLIENT_ID.apps.googleusercontent.com</string>
+2. Set these build settings in `project.yml`:
+   - `GOOGLE_IOS_CLIENT_ID`: the iOS OAuth client ID, for example `123456789-abc.apps.googleusercontent.com`
+   - `GOOGLE_IOS_REVERSED_CLIENT_ID`: the reversed URL scheme, for example `com.googleusercontent.apps.123456789-abc`
+3. Set `GOOGLE_IOS_CLIENT_ID` to the same client ID in the Laravel API `.env`, then run the backend migration.
 
-   <key>CFBundleURLTypes</key>
-   <array>
-     <dict>
-       <key>CFBundleURLSchemes</key>
-       <array>
-         <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
-       </array>
-     </dict>
-   </array>
-   ```
-3. Add the GoogleSignIn package in Xcode → File → Add Package Dependencies:
-   `https://github.com/google/GoogleSignIn-iOS`
-4. Uncomment the two blocks marked `// MARK: - Uncomment after adding SPM package` in `GoogleAuthService.swift`.
+The GoogleSignIn Swift package is already declared in `project.yml`. The app uses Google Sign-In both for primary login and for Gmail/Google Contacts import.
+
+### 4. Contact import
+
+The People tab import menu supports two sources:
+
+- **Import from phone** requests iOS Contacts permission through `CNContactStore`, reads names/emails/phones/organizations, dedupes against the local SwiftData cache, and posts selected contacts to `POST /api/v1/contacts/import`.
+- **Import from Gmail** signs in with Google, requests People API and Gmail readonly scopes, pulls Google Contacts plus recent Gmail `From:` senders, dedupes by email, and posts selected candidates to the same import endpoint.
 
 ---
 
 ## Build
 
-Open `KontaktiApp.xcodeproj` in Xcode and run on a simulator or device. No additional setup required for the core CRM features — Gmail import requires steps 2–4 above.
+The Xcode project is generated from `project.yml` with XcodeGen:
+
+```bash
+xcodegen generate
+xcodebuild -project KontaktiApp.xcodeproj -scheme KontaktiApp -destination 'platform=iOS Simulator,name=iPhone 17' build
+```
+
+Open `KontaktiApp.xcodeproj` in Xcode and run on a simulator or device.
 
 ---
 

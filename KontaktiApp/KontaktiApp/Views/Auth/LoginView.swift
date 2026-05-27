@@ -6,6 +6,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
+    @State private var isGoogleLoading = false
     @State private var errorMessage: String?
     @FocusState private var focusedField: Field?
 
@@ -124,6 +125,44 @@ struct LoginView: View {
                             .cornerRadius(14)
                         }
                         .disabled(!canSubmit || isLoading)
+
+                        NavigationLink(destination: RegisterView()) {
+                            Text("Create account")
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color(.secondarySystemGroupedBackground))
+                                .foregroundColor(Color(hex: "#4F46E5"))
+                                .fontWeight(.semibold)
+                                .cornerRadius(14)
+                        }
+
+                        HStack(spacing: 12) {
+                            Rectangle().fill(Color(.separator)).frame(height: 1)
+                            Text("or").font(.caption).foregroundColor(.secondary)
+                            Rectangle().fill(Color(.separator)).frame(height: 1)
+                        }
+
+                        Button {
+                            Task { await signInWithGoogle() }
+                        } label: {
+                            HStack(spacing: 10) {
+                                if isGoogleLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.85)
+                                } else {
+                                    Image(systemName: "g.circle")
+                                        .font(.title3)
+                                }
+                                Text(isGoogleLoading ? "Signing in..." : "Sign in with Google")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .foregroundColor(.primary)
+                            .cornerRadius(14)
+                        }
+                        .disabled(isGoogleLoading || isLoading)
                     }
                     .padding(.horizontal, 24)
 
@@ -158,6 +197,26 @@ struct LoginView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    private func signInWithGoogle() async {
+        focusedField = nil
+        isGoogleLoading = true
+        errorMessage = nil
+
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = scene.windows.first?.rootViewController else {
+            errorMessage = "Cannot present Google sign-in. Please try again."
+            isGoogleLoading = false
+            return
+        }
+
+        do {
+            try await authVM.loginWithGoogle(presentingViewController: rootVC)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isGoogleLoading = false
     }
 }
 

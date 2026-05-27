@@ -15,6 +15,7 @@ final class PeopleViewModel: ObservableObject {
     // MARK: - Import sheet state
 
     @Published var showingImportSheet = false
+    @Published var showLinkedInImport = false
     @Published var importSource: ImportSource = .device
     @Published var importCandidates: [ImportCandidate] = []
     @Published var importError: String?
@@ -98,8 +99,13 @@ final class PeopleViewModel: ObservableObject {
             hasMore = currentPage < result.lastPage
             if hasMore { currentPage += 1 }
 
-            // Update local cache (only on the first page / reset to avoid partial writes)
+            // Update local cache (only on the first page / reset to avoid partial writes).
+            // On a reset we clear first so server-side deletes (e.g. a contact wipe)
+            // are reflected in the cache rather than leaving stale records behind.
             if reset || currentPage == 2 {
+                if reset {
+                    store.clearAll()
+                }
                 store.upsertPeople(result.data)
             }
         } catch {

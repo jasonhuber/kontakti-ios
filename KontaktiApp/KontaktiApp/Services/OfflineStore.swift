@@ -13,6 +13,20 @@ final class OfflineStore {
 
     private init() {}
 
+    func hasCachedData() -> Bool {
+        !fetchPeople().isEmpty || !fetchCompanies().isEmpty || !fetchDiscussions().isEmpty
+    }
+
+    /// Wipes all locally cached data (people, companies, discussions).
+    /// Call this on logout or after a server-side data wipe so stale records
+    /// don't survive the next load cycle.
+    func clearAll() {
+        try? context.delete(model: PersonEntity.self)
+        try? context.delete(model: CompanyEntity.self)
+        try? context.delete(model: DiscussionEntity.self)
+        try? context.save()
+    }
+
     // MARK: - People
 
     func fetchPeople() -> [PersonEntity] {
@@ -26,9 +40,10 @@ final class OfflineStore {
         let existingIds = Set(fetchPeople().map(\.id))
         for person in people {
             if existingIds.contains(person.id) {
+                let personId = person.id
                 // Update in-place by finding and mutating the existing entity
                 var descriptor = FetchDescriptor<PersonEntity>(
-                    predicate: #Predicate { $0.id == person.id }
+                    predicate: #Predicate { $0.id == personId }
                 )
                 descriptor.fetchLimit = 1
                 if let entity = try? context.fetch(descriptor).first {
@@ -43,6 +58,7 @@ final class OfflineStore {
                     entity.lastContactedAt = person.lastContactedAt
                     entity.companyId = person.companyId
                     entity.companyName = person.company?.name
+                    entity.doNotContact = person.doNotContact
                     entity.updatedAt = person.updatedAt
                 }
             } else {
@@ -65,8 +81,9 @@ final class OfflineStore {
         let existingIds = Set(fetchCompanies().map(\.id))
         for company in companies {
             if existingIds.contains(company.id) {
+                let companyId = company.id
                 var descriptor = FetchDescriptor<CompanyEntity>(
-                    predicate: #Predicate { $0.id == company.id }
+                    predicate: #Predicate { $0.id == companyId }
                 )
                 descriptor.fetchLimit = 1
                 if let entity = try? context.fetch(descriptor).first {
@@ -80,6 +97,38 @@ final class OfflineStore {
                 }
             } else {
                 context.insert(CompanyEntity(from: company))
+            }
+        }
+        try? context.save()
+    }
+
+    // MARK: - Discussions
+
+    func fetchDiscussions() -> [DiscussionEntity] {
+        let descriptor = FetchDescriptor<DiscussionEntity>(
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    func upsertDiscussions(_ discussions: [Discussion]) {
+        let existingIds = Set(fetchDiscussions().map(\.id))
+        for discussion in discussions {
+            if existingIds.contains(discussion.id) {
+                let discussionId = discussion.id
+                var descriptor = FetchDescriptor<DiscussionEntity>(
+                    predicate: #Predicate { $0.id == discussionId }
+                )
+                descriptor.fetchLimit = 1
+                if let entity = try? context.fetch(descriptor).first {
+                    entity.title = discussion.title
+                    entity.date = discussion.date
+                    entity.type = discussion.type.rawValue
+                    entity.summary = discussion.summary
+                    entity.updatedAt = discussion.updatedAt
+                }
+            } else {
+                context.insert(DiscussionEntity(from: discussion))
             }
         }
         try? context.save()

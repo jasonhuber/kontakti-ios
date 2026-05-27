@@ -22,5 +22,13 @@ android/local.properties
 .env
 .env.local
 
+# Secrets (API keys — never commit)
+**/EnrichmentSecrets.swift
+
 # macOS
 .DS_Store
+
+# Apple Push private key (NEVER commit)
+AuthKey_*.p8
+# Google OAuth client plist (NEVER commit)
+client_*.apps.googleusercontent.com.plist

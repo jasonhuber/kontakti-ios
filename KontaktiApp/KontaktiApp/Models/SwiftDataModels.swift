@@ -19,6 +19,9 @@ final class PersonEntity {
     var lastContactedAt: Date?
     var companyId: String?
     var companyName: String?
+    /// Mirrors `Person.doNotContact`. Defaults to false so existing persisted
+    /// rows from before this field existed migrate cleanly.
+    var doNotContact: Bool = false
     var updatedAt: Date
 
     init(from person: Person) {
@@ -34,6 +37,7 @@ final class PersonEntity {
         self.lastContactedAt = person.lastContactedAt
         self.companyId = person.companyId
         self.companyName = person.company?.name
+        self.doNotContact = person.doNotContact
         self.updatedAt = person.updatedAt
     }
 

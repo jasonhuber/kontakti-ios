@@ -12,6 +12,8 @@ struct ImportContactsView: View {
     @State private var isImporting = false
     @State private var importError: String?
     @State private var importSucceeded = false
+    @State private var successTitle = "Imported!"
+    @State private var successMessage = "Your selected contacts have been added to Kontakti."
 
     private let api = APIClient.shared
 
@@ -101,13 +103,13 @@ struct ImportContactsView: View {
                     }
                 }
             }
-            .alert("Imported!", isPresented: $importSucceeded) {
+            .alert(successTitle, isPresented: $importSucceeded) {
                 Button("Done") {
                     dismiss()
                     onDismiss?()
                 }
             } message: {
-                Text("Your selected contacts have been added to Kontakti.")
+                Text(successMessage)
             }
         }
     }
@@ -121,13 +123,33 @@ struct ImportContactsView: View {
             return
         }
 
-        let toImport = candidates.filter { selected.contains($0.id) }
-        guard !toImport.isEmpty else { return }
+        let selectedCandidates = candidates.filter { selected.contains($0.id) }
+        let toImport = selectedCandidates.compactMap { $0.normalizedForImport() }
+        let skippedBeforeImport = selectedCandidates.count - toImport.count
+        guard !toImport.isEmpty else {
+            importError = "None of the selected contacts include enough information to import."
+            return
+        }
 
         isImporting = true
         importError = nil
         do {
-            try await api.importContacts(BulkImportRequest(contacts: toImport))
+            if NetworkMonitor.shared.isConnected {
+                let result = try await api.importContacts(BulkImportRequest(contacts: toImport))
+                await OfflineStore.shared.upsertPeople(result.people)
+                successTitle = "Imported!"
+                var msg = "Imported \(result.imported), skipped \(result.skipped + skippedBeforeImport)."
+                if result.autoMerged > 0 {
+                    msg += " Auto-merged \(result.autoMerged) duplicate\(result.autoMerged == 1 ? "" : "s")."
+                }
+                successMessage = msg + " Your contacts are synced to your Kontakti account."
+            } else {
+                for candidate in toImport {
+                    await SyncQueue.shared.enqueue(.createPerson(candidate))
+                }
+                successTitle = "Queued!"
+                successMessage = "These contacts will sync to your Kontakti account when you're back online."
+            }
             importSucceeded = true
         } catch {
             importError = error.localizedDescription

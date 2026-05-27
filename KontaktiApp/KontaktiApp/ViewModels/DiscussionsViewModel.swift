@@ -13,6 +13,8 @@ final class DiscussionsViewModel: ObservableObject {
     @Published var hasMore = true
 
     private let api = APIClient.shared
+    private let store = OfflineStore.shared
+    private let networkMonitor = NetworkMonitor.shared
     private var searchTask: Task<Void, Never>?
 
     func load(reset: Bool = false) async {
@@ -21,6 +23,27 @@ final class DiscussionsViewModel: ObservableObject {
             currentPage = 1
             hasMore = true
         }
+
+        if discussions.isEmpty {
+            let cached = store.fetchDiscussions()
+            if !cached.isEmpty {
+                discussions = cached.map { entity in
+                    Discussion(
+                        id: entity.id,
+                        title: entity.title,
+                        date: entity.date,
+                        type: entity.displayType,
+                        summary: entity.summary,
+                        body: nil,
+                        participants: nil,
+                        createdAt: entity.updatedAt,
+                        updatedAt: entity.updatedAt
+                    )
+                }
+            }
+        }
+
+        guard networkMonitor.isConnected else { return }
         guard hasMore && !isLoading else { return }
         isLoading = true
         errorMessage = nil
@@ -37,6 +60,9 @@ final class DiscussionsViewModel: ObservableObject {
             }
             hasMore = currentPage < result.lastPage
             if hasMore { currentPage += 1 }
+            if reset || currentPage == 2 {
+                store.upsertDiscussions(result.data)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -59,7 +85,12 @@ final class DiscussionsViewModel: ObservableObject {
             summary: summary?.isEmpty == true ? nil : summary,
             participantIds: participantIds.isEmpty ? nil : participantIds
         )
-        _ = try await api.createDiscussion(req)
+        if networkMonitor.isConnected {
+            let discussion = try await api.createDiscussion(req)
+            store.upsertDiscussions([discussion])
+        } else {
+            await SyncQueue.shared.enqueue(.logDiscussion(req))
+        }
         await load(reset: true)
     }
 

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import GoogleSignIn
 
 // MARK: - Google Auth
 
@@ -16,22 +17,25 @@ import SwiftUI
 ///   https://www.googleapis.com/auth/contacts.readonly
 ///   https://www.googleapis.com/auth/gmail.readonly
 
-// NOTE: The GoogleSignIn import below requires the GoogleSignIn SPM package to be
-// added to the Xcode project. The code is written against the GoogleSignIn 7.x API.
-// import GoogleSignIn  ← uncomment after adding the SPM package
-
 enum GoogleAuthError: LocalizedError {
     case missingClientID
     case signInFailed(String)
     case noToken
+    case noIDToken
 
     var errorDescription: String? {
         switch self {
         case .missingClientID: return "GIDClientID not found in Info.plist."
         case .signInFailed(let msg): return "Google sign-in failed: \(msg)"
         case .noToken: return "Could not retrieve Google access token."
+        case .noIDToken: return "Could not retrieve Google identity token."
         }
     }
+}
+
+struct GoogleSignInTokens {
+    let idToken: String
+    let accessToken: String
 }
 
 @MainActor
@@ -51,13 +55,16 @@ final class GoogleAuthService: ObservableObject {
     /// Presents the Google Sign-In sheet and requests contacts + gmail scopes.
     /// Returns the access token on success.
     func signIn(presentingViewController: UIViewController) async throws -> String {
+        let tokens = try await signInTokens(presentingViewController: presentingViewController)
+        return tokens.accessToken
+    }
+
+    func signInTokens(presentingViewController: UIViewController) async throws -> GoogleSignInTokens {
         guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String,
               !clientID.isEmpty else {
             throw GoogleAuthError.missingClientID
         }
 
-        // Uncomment the block below once GoogleSignIn SPM package is added:
-        /*
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
 
@@ -71,42 +78,101 @@ final class GoogleAuthService: ObservableObject {
                     continuation.resume(throwing: GoogleAuthError.signInFailed(error.localizedDescription))
                     return
                 }
-                guard let token = result?.user.accessToken.tokenString else {
+                guard let idToken = result?.user.idToken?.tokenString else {
+                    continuation.resume(throwing: GoogleAuthError.noIDToken)
+                    return
+                }
+                guard let accessToken = result?.user.accessToken.tokenString else {
                     continuation.resume(throwing: GoogleAuthError.noToken)
                     return
                 }
-                self?.accessToken = token
-                self?.isSignedIn = true
-                continuation.resume(returning: token)
+                Task { @MainActor [weak self] in
+                    self?.accessToken = accessToken
+                    self?.isSignedIn = true
+                    continuation.resume(returning: GoogleSignInTokens(idToken: idToken, accessToken: accessToken))
+                }
             }
         }
-        */
+    }
 
-        // Stub: replace with real GIDSignIn call above.
-        throw GoogleAuthError.signInFailed("GoogleSignIn SDK not yet linked. Add the SPM package and uncomment the sign-in block.")
+    // MARK: - Account linking
+    //
+    // Performs a fresh Google sign-in solely to obtain a fresh id_token for the
+    // backend to verify and link a secondary Gmail account to the existing
+    // Kontakti user. Does NOT mutate `accessToken` / `isSignedIn` on this
+    // service — the primary user session is preserved.
+    //
+    // Note: GIDSignIn always signs out any previously signed-in user as part of
+    // calling `signIn(...)`. For linking flows we restore the previous session
+    // immediately afterward via `restorePreviousSignIn` so the primary session
+    // for Gmail-reads continues to work. The fresh id_token returned here is
+    // what the server uses to identify the *new* account being linked.
+    func signInForLinking(presentingViewController: UIViewController) async throws -> String {
+        guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String,
+              !clientID.isEmpty else {
+            throw GoogleAuthError.missingClientID
+        }
+
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+
+        // Remember the previous primary state so we can advertise it again.
+        let previousAccessToken = accessToken
+        let previousIsSignedIn = isSignedIn
+
+        let idToken: String = try await withCheckedThrowingContinuation { continuation in
+            GIDSignIn.sharedInstance.signIn(
+                withPresenting: presentingViewController,
+                hint: nil,
+                additionalScopes: [contactsScope, gmailScope]
+            ) { result, error in
+                if let error {
+                    continuation.resume(throwing: GoogleAuthError.signInFailed(error.localizedDescription))
+                    return
+                }
+                guard let idToken = result?.user.idToken?.tokenString else {
+                    continuation.resume(throwing: GoogleAuthError.noIDToken)
+                    return
+                }
+                continuation.resume(returning: idToken)
+            }
+        }
+
+        // Restore previous primary state (best-effort; GIDSignIn keeps the most
+        // recent user in its own session — this just keeps our @Published flags
+        // consistent for the rest of the app).
+        if previousIsSignedIn, previousAccessToken != nil {
+            self.accessToken = previousAccessToken
+            self.isSignedIn = true
+        }
+
+        return idToken
     }
 
     // MARK: - Restore previous session
 
     func restorePreviousSignIn() async {
-        // Uncomment once GoogleSignIn is linked:
-        /*
-        return try await withCheckedThrowingContinuation { continuation in
+        await withCheckedContinuation { continuation in
             GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
-                if let token = user?.accessToken.tokenString {
-                    self?.accessToken = token
-                    self?.isSignedIn = true
+                Task { @MainActor [weak self] in
+                    if error == nil, let token = user?.accessToken.tokenString {
+                        self?.accessToken = token
+                        self?.isSignedIn = true
+                    }
+                    continuation.resume()
                 }
-                continuation.resume()
             }
         }
-        */
+    }
+
+    func handleOpenURL(_ url: URL) -> Bool {
+        GIDSignIn.sharedInstance.handle(url)
     }
 
     // MARK: - Sign out
 
     func signOut() {
-        // GIDSignIn.sharedInstance.signOut()
+        GIDSignIn.sharedInstance.signOut()
         accessToken = nil
         isSignedIn = false
     }

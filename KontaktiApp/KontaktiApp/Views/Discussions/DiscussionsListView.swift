@@ -8,53 +8,7 @@ struct DiscussionsListView: View {
     var body: some View {
         ZStack {
             Color(.systemGroupedBackground).ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // Type filter
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(allTypes, id: \.self) { type in
-                            TypeFilterPill(
-                                label: type.map { "\($0.emoji) \($0.label)" } ?? "All",
-                                isSelected: vm.selectedType == type
-                            ) {
-                                vm.selectedType = type
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                }
-                .background(Color(.systemGroupedBackground))
-
-                if vm.isLoading && vm.discussions.isEmpty {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                } else if vm.discussions.isEmpty && !vm.isLoading {
-                    EmptyStateView(
-                        icon: "bubble.left.and.bubble.right",
-                        title: "No discussions",
-                        subtitle: "Log a call, meeting, or message to get started"
-                    )
-                } else {
-                    List {
-                        ForEach(vm.discussions) { discussion in
-                            NavigationLink(value: discussion) {
-                                DiscussionRowView(discussion: discussion)
-                            }
-                            .listRowBackground(Color(.secondarySystemGroupedBackground))
-                        }
-                    }
-                    .listStyle(.insetGrouped)
-                    .navigationDestination(for: Discussion.self) { discussion in
-                        DiscussionDetailView(discussion: discussion)
-                    }
-                    .refreshable {
-                        await vm.load()
-                    }
-                }
-            }
+            content
         }
         .navigationTitle("Discussions")
         .navigationBarTitleDisplayMode(.large)
@@ -79,6 +33,62 @@ struct DiscussionsListView: View {
             Task { await vm.load() }
         }
         .task {
+            await vm.load()
+        }
+    }
+
+    private var content: some View {
+        VStack(spacing: 0) {
+            typeFilter
+
+            if vm.isLoading && vm.discussions.isEmpty {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if vm.discussions.isEmpty && !vm.isLoading {
+                EmptyStateView(
+                    icon: "bubble.left.and.bubble.right",
+                    title: "No discussions",
+                    subtitle: "Log a call, meeting, or message to get started"
+                )
+            } else {
+                discussionsList
+            }
+        }
+    }
+
+    private var typeFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(allTypes, id: \.self) { type in
+                    TypeFilterPill(
+                        label: type.map { "\($0.emoji) \($0.label)" } ?? "All",
+                        isSelected: vm.selectedType == type
+                    ) {
+                        vm.selectedType = type
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var discussionsList: some View {
+        List {
+            ForEach(vm.discussions) { discussion in
+                NavigationLink(value: discussion) {
+                    DiscussionRowView(discussion: discussion)
+                }
+                .listRowBackground(Color(.secondarySystemGroupedBackground))
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationDestination(for: Discussion.self) { discussion in
+            DiscussionDetailView(discussion: discussion)
+        }
+        .refreshable {
             await vm.load()
         }
     }

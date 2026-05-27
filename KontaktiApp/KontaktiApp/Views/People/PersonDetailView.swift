@@ -3,6 +3,8 @@ import SwiftUI
 struct PersonDetailView: View {
     let person: Person
     @StateObject private var vm = PersonDetailViewModel()
+    @State private var showEdit = false
+    @State private var showVoice = false
 
     private let indigo = Color(red: 0.31, green: 0.27, blue: 0.90)
     private let columns = [GridItem(.adaptive(minimum: 80), spacing: 8)]
@@ -45,37 +47,51 @@ struct PersonDetailView: View {
                 .padding(.bottom, 16)
 
                 // Contact info
-                if displayPerson.email != nil || displayPerson.phone != nil || displayPerson.linkedinUrl != nil {
+                let mergedEmails = mergeEmails(displayPerson)
+                let mergedPhones = mergePhones(displayPerson)
+                if !mergedEmails.isEmpty || !mergedPhones.isEmpty || displayPerson.linkedinUrl != nil {
                     GroupBox {
                         VStack(spacing: 0) {
-                            if let email = displayPerson.email {
+                            ForEach(Array(mergedEmails.enumerated()), id: \.offset) { idx, email in
                                 contactRow(
                                     icon: "envelope",
-                                    label: email,
-                                    url: URL(string: "mailto:\(email)")
+                                    label: email.value,
+                                    chip: email.label,
+                                    url: URL(string: "mailto:\(email.value)")
                                 )
+                                if idx < mergedEmails.count - 1 {
+                                    Divider().padding(.leading, 36)
+                                }
                             }
-                            if displayPerson.email != nil && displayPerson.phone != nil {
+                            if !mergedEmails.isEmpty && !mergedPhones.isEmpty {
                                 Divider().padding(.leading, 36)
                             }
-                            if let phone = displayPerson.phone {
+                            ForEach(Array(mergedPhones.enumerated()), id: \.offset) { idx, phone in
                                 contactRow(
                                     icon: "phone",
-                                    label: phone,
-                                    url: URL(string: "tel:\(phone.filter { !$0.isWhitespace })")
+                                    label: phone.value,
+                                    chip: phone.label,
+                                    url: URL(string: "tel:\(phone.value.filter { !$0.isWhitespace })")
                                 )
+                                if idx < mergedPhones.count - 1 {
+                                    Divider().padding(.leading, 36)
+                                }
                             }
-                            if displayPerson.phone != nil && displayPerson.linkedinUrl != nil {
+                            if (!mergedPhones.isEmpty || !mergedEmails.isEmpty) && displayPerson.linkedinUrl != nil {
                                 Divider().padding(.leading, 36)
                             }
                             if let linkedin = displayPerson.linkedinUrl, let url = URL(string: linkedin) {
-                                contactRow(icon: "globe", label: "LinkedIn", url: url)
+                                contactRow(icon: "globe", label: "LinkedIn", chip: nil, url: url)
                             }
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 8)
                 }
+
+                // Social handle chips
+                socialChips
+                    .padding(.bottom, 16)
 
                 // Follow-up
                 if let followup = displayPerson.nextFollowupAt {
@@ -98,6 +114,11 @@ struct PersonDetailView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
                 }
+
+                // Do not contact
+                DoNotContactPanel(person: displayPerson, vm: vm)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
 
                 // Tags
                 if !displayPerson.tags.isEmpty {
@@ -124,6 +145,10 @@ struct PersonDetailView: View {
                     }
                     .padding(.bottom, 16)
                 }
+
+                // Activity
+                activitySection
+                    .padding(.bottom, 16)
 
                 // Timeline
                 if !vm.timeline.isEmpty {
@@ -162,6 +187,45 @@ struct PersonDetailView: View {
                     .padding(.bottom, 16)
                 }
 
+                // What you remember about them (quiz answers)
+                if !vm.remembrances.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("What you remember about them")
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 16)
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(vm.remembrances) { r in
+                                HStack(alignment: .top, spacing: 8) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(r.questionKey.displayLabel)
+                                            .font(.caption2.bold())
+                                            .foregroundColor(.secondary)
+                                        Text(r.answer)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                    }
+                                    Spacer()
+                                    // TODO: wire to in-place editor for remembrance entries.
+                                    Image(systemName: "pencil")
+                                        .foregroundColor(.secondary)
+                                        .font(.footnote)
+                                }
+                                .padding(.vertical, 4)
+                                if r.id != vm.remembrances.last?.id {
+                                    Divider()
+                                }
+                            }
+                        }
+                        .padding(12)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.bottom, 16)
+                }
+
                 // Notes
                 if let notes = displayPerson.notes, !notes.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
@@ -194,10 +258,146 @@ struct PersonDetailView: View {
         .task {
             await vm.load(id: person.id)
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showVoice = true
+                } label: {
+                    Image(systemName: "mic.fill")
+                }
+                .tint(indigo)
+                .accessibilityLabel("Voice memo about \(displayPerson.fullName)")
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showEdit = true
+                } label: {
+                    Image(systemName: "pencil")
+                }
+                .tint(indigo)
+            }
+        }
+        .sheet(isPresented: $showEdit) {
+            EditPersonView(person: displayPerson) { _ in
+                Task { await vm.refresh() }
+            }
+        }
+        .sheet(isPresented: $showVoice) {
+            VoiceRecordingView(
+                personId: displayPerson.id,
+                context: displayPerson.fullName
+            )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .kontaktiVoiceCaptureCommitted)) { _ in
+            Task { await vm.refresh() }
+        }
+    }
+
+    // MARK: - Social chips
+
+    @ViewBuilder
+    private var socialChips: some View {
+        let p = displayPerson
+        let chips: [(String, String, URL?)] = [
+            p.instagramHandle.flatMap { h in ("camera", "@\(h)", URL(string: "instagram://user?username=\(h)")) },
+            p.facebookUrl.flatMap { url in ("f.cursive.circle", "Facebook", URL(string: url)) },
+            p.twitterXHandle.flatMap { h in ("bird", "@\(h)", URL(string: "https://x.com/\(h)")) },
+            p.tiktokHandle.flatMap { h in ("music.note", "@\(h)", URL(string: "https://www.tiktok.com/@\(h)")) },
+            p.whatsappPhone.flatMap { wa in
+                let cleaned = wa.filter { !$0.isWhitespace && $0 != "+" }
+                return ("phone.circle", "WhatsApp", URL(string: "whatsapp://send?phone=\(cleaned)"))
+            }
+        ].compactMap { $0 }
+
+        if !chips.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(chips.enumerated()), id: \.offset) { _, chip in
+                        Button {
+                            if let url = chip.2 { UIApplication.shared.open(url) }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: chip.0)
+                                Text(chip.1).font(.caption)
+                            }
+                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(indigo.opacity(0.12))
+                            .foregroundColor(indigo)
+                            .clipShape(Capsule())
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+
+    // MARK: - Activity section
+
+    @ViewBuilder
+    private var activitySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Activity")
+                    .font(.footnote).fontWeight(.semibold).foregroundColor(.secondary)
+                Spacer()
+                Button {
+                    Task { await vm.refreshActivity() }
+                } label: {
+                    if vm.isRefreshingActivity {
+                        ProgressView().scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "arrow.clockwise").font(.caption)
+                    }
+                }
+                .disabled(vm.isRefreshingActivity)
+            }
+            .padding(.horizontal, 16)
+
+            if vm.activity.isEmpty {
+                let hasHandles = (displayPerson.instagramHandle != nil) ||
+                    (displayPerson.facebookUrl != nil) ||
+                    (displayPerson.twitterXHandle != nil) ||
+                    (displayPerson.tiktokHandle != nil)
+                GroupBox {
+                    if hasHandles {
+                        Text("No recent activity yet. Pull refresh to scan.")
+                            .font(.subheadline).foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Button {
+                            showEdit = true
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Add social handles to start tracking activity").font(.subheadline)
+                                Text("Tap to edit").font(.caption).foregroundColor(indigo)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            } else {
+                List {
+                    ForEach(vm.activity.prefix(10)) { act in
+                        ActivityRow(activity: act)
+                            .swipeActions(edge: .trailing) {
+                                Button("Acknowledge") {
+                                    Task { await vm.acknowledge(activityId: act.id) }
+                                }
+                                .tint(.gray)
+                            }
+                    }
+                }
+                .listStyle(.plain)
+                .frame(height: CGFloat(min(vm.activity.count, 10)) * 76)
+                .scrollDisabled(true)
+            }
+        }
     }
 
     @ViewBuilder
-    private func contactRow(icon: String, label: String, url: URL?) -> some View {
+    private func contactRow(icon: String, label: String, chip: String?, url: URL?) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(indigo)
@@ -206,14 +406,87 @@ struct PersonDetailView: View {
                 Link(label, destination: url)
                     .font(.subheadline)
                     .foregroundColor(indigo)
+                    .lineLimit(1)
             } else {
                 Text(label)
                     .font(.subheadline)
                     .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
+            if let chip, !chip.isEmpty {
+                Text(chip.uppercased())
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(0.5)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .foregroundColor(.secondary)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
             }
             Spacer()
         }
         .padding(.vertical, 10)
+    }
+
+    // MARK: - Merge helpers
+    //
+    // Mirrors the web frontend's `ContactRows` dedup/sort logic. Combines the
+    // relation rows (`emails` / `phones`) with the legacy single-column fields
+    // (`email` / `phone`) so neither is dropped. De-duped by lowercased email
+    // value or digits-only phone (stripping a US country-code `1` if 11 digits).
+    // Primary entries are sorted first.
+    private struct MergedContact {
+        let value: String
+        let label: String
+    }
+
+    private func mergeEmails(_ p: Person) -> [MergedContact] {
+        var out: [(value: String, label: String, primary: Bool)] = []
+        var seen = Set<String>()
+        func push(_ value: String, _ label: String, _ primary: Bool) {
+            let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !v.isEmpty else { return }
+            let key = v.lowercased()
+            guard !seen.contains(key) else { return }
+            seen.insert(key)
+            out.append((v, label, primary))
+        }
+        for e in p.emails {
+            push(e.value, e.label, e.isPrimary)
+        }
+        if let legacy = p.email {
+            push(legacy, "", false)
+        }
+        return out
+            .sorted { (a, b) in (a.primary ? 1 : 0) > (b.primary ? 1 : 0) }
+            .map { MergedContact(value: $0.value, label: $0.label) }
+    }
+
+    private func mergePhones(_ p: Person) -> [MergedContact] {
+        var out: [(value: String, label: String, primary: Bool)] = []
+        var seen = Set<String>()
+        func normalise(_ s: String) -> String {
+            let digits = s.filter { $0.isNumber }
+            if digits.count == 11 && digits.hasPrefix("1") { return String(digits.dropFirst()) }
+            return digits
+        }
+        func push(_ value: String, _ label: String, _ primary: Bool) {
+            let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !v.isEmpty else { return }
+            let key = normalise(v)
+            guard !key.isEmpty, !seen.contains(key) else { return }
+            seen.insert(key)
+            out.append((v, label, primary))
+        }
+        for ph in p.phones {
+            push(ph.value, ph.label, ph.isPrimary)
+        }
+        if let legacy = p.phone {
+            push(legacy, "", false)
+        }
+        return out
+            .sorted { (a, b) in (a.primary ? 1 : 0) > (b.primary ? 1 : 0) }
+            .map { MergedContact(value: $0.value, label: $0.label) }
     }
 
     @ViewBuilder
@@ -236,5 +509,186 @@ struct PersonDetailView: View {
         case "task":       return "checkmark.circle"
         default:           return "circle"
         }
+    }
+}
+
+// MARK: - ActivityRow
+
+struct ActivityRow: View {
+    let activity: SocialActivity
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: activity.sourceIcon)
+                .foregroundColor(.secondary)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(activity.source.capitalized)
+                        .font(.caption).fontWeight(.semibold)
+                    if let occurred = activity.occurredAt {
+                        Text(occurred, style: .relative)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    if let loc = activity.location {
+                        Text("· \(loc)").font(.caption2).foregroundColor(.secondary)
+                    }
+                }
+                if let content = activity.content {
+                    Text(content).font(.subheadline).lineLimit(3)
+                }
+            }
+            Spacer()
+            if let imgUrl = activity.imageUrl, let url = URL(string: imgUrl) {
+                AsyncImage(url: url) { img in
+                    img.resizable().scaledToFill()
+                } placeholder: {
+                    Color(.tertiarySystemFill)
+                }
+                .frame(width: 44, height: 44)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - DoNotContactPanel
+
+/// Inline panel on PersonDetail that toggles the do-not-contact flag and
+/// lets the user record a reason. Mirrors the web frontend's panel.
+/// - Toggle saves immediately.
+/// - Reason saves on focus loss (debounced via local state mirror) and
+///   when the user submits the editor.
+struct DoNotContactPanel: View {
+    let person: Person
+    @ObservedObject var vm: PersonDetailViewModel
+
+    @State private var isOn: Bool
+    @State private var reason: String
+    @State private var savedReason: String
+    @State private var isSaving = false
+
+    init(person: Person, vm: PersonDetailViewModel) {
+        self.person = person
+        self.vm = vm
+        _isOn = State(initialValue: person.doNotContact)
+        _reason = State(initialValue: person.doNotContactReason ?? "")
+        _savedReason = State(initialValue: person.doNotContactReason ?? "")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(isOn ? Color.red.opacity(0.15) : Color(.systemGray5))
+                        .frame(width: 28, height: 28)
+                    Image(systemName: "nosign")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(isOn ? .red : Color(.systemGray))
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(isOn ? "Do not contact" : "Contact normally")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(isOn ? .red : .primary)
+                    Text(isOn
+                         ? "Reminders, drafts, and cadence checks are suppressed."
+                         : "Suppress reminders, drafts, and cadence checks.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .tint(.red)
+                    .disabled(isSaving)
+                    .onChange(of: isOn) { _, newValue in
+                        Task { await saveToggle(newValue) }
+                    }
+            }
+
+            if isOn {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Reason (optional)")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                    TextField(
+                        "e.g. asked to be removed, deceased, ex-spouse, harassment, GDPR request",
+                        text: $reason,
+                        axis: .vertical
+                    )
+                    .font(.subheadline)
+                    .lineLimit(2...4)
+                    .padding(8)
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.red.opacity(0.2), lineWidth: 0.5)
+                    )
+                    .submitLabel(.done)
+                    .onSubmit { Task { await saveReason() } }
+                    .onChange(of: reason) { _, _ in
+                        // Debounce: 800ms after the last keystroke.
+                        Task { await debouncedSaveReason() }
+                    }
+                }
+                .padding(.top, 4)
+            }
+        }
+        .padding(12)
+        .background(isOn ? Color.red.opacity(0.06) : Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isOn ? Color.red.opacity(0.25) : Color.clear, lineWidth: 0.5)
+        )
+        .animation(.easeInOut(duration: 0.2), value: isOn)
+    }
+
+    @MainActor
+    private func saveToggle(_ newValue: Bool) async {
+        guard newValue != person.doNotContact else { return }
+        isSaving = true
+        defer { isSaving = false }
+
+        var patch = PersonPatch()
+        patch.doNotContact = newValue
+        if !newValue {
+            // Turning off — clear the reason too.
+            patch.doNotContactReason = ""
+            reason = ""
+            savedReason = ""
+        }
+        let ok = await vm.saveEdit(patch)
+        if !ok {
+            // Roll back the optimistic UI flip if the save failed.
+            isOn = person.doNotContact
+        }
+    }
+
+    private func debouncedSaveReason() async {
+        let snapshot = reason
+        try? await Task.sleep(nanoseconds: 800_000_000)
+        // If the user kept typing, abort — a later debounce will save the final value.
+        if snapshot != reason { return }
+        await saveReason()
+    }
+
+    @MainActor
+    private func saveReason() async {
+        let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != savedReason else { return }
+        var patch = PersonPatch()
+        patch.doNotContactReason = trimmed
+        let ok = await vm.saveEdit(patch)
+        if ok { savedReason = trimmed }
     }
 }
