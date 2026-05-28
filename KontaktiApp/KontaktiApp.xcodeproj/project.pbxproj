@@ -83,6 +83,7 @@
 		F19352947FC715C746B60BA1 /* CompanyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DB990227BF0FF56FB9CB43 /* CompanyDetailView.swift */; };
 		F61DC43F9F5CF0E8CCB3BD65 /* VoiceResultReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C54C3763A663F0D2E8ED0E /* VoiceResultReviewView.swift */; };
 		F8D6E13F3987980AB2D37818 /* TodayProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 675A9C46F74D74BCB59F2E56 /* TodayProvider.swift */; };
+		FCFFDD1333AFD4FC4030CB46 /* PhotoGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004536DFB2D28320EC9D7AE6 /* PhotoGalleryView.swift */; };
 		FF2A8A8D92FD97E290061493 /* ImportCandidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DB96DFDEC428FC6BA0D264 /* ImportCandidate.swift */; };
 /* End PBXBuildFile section */
 
@@ -119,6 +120,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		004536DFB2D28320EC9D7AE6 /* PhotoGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGalleryView.swift; sourceTree = "<group>"; };
 		04CD75380D7D9595D52CDD63 /* DiscussionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscussionsViewModel.swift; sourceTree = "<group>"; };
 		0C02BAE513C5EF69C094FF36 /* QuizSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizSessionView.swift; sourceTree = "<group>"; };
 		0C6F5CF630E4C6E9F4190511 /* PersonCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonCardView.swift; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 				CA8099D8BBFEA1E78E5858CC /* PeopleListView.swift */,
 				0C6F5CF630E4C6E9F4190511 /* PersonCardView.swift */,
 				56323189271D5B49AD1E4D5F /* PersonDetailView.swift */,
+				004536DFB2D28320EC9D7AE6 /* PhotoGalleryView.swift */,
 			);
 			path = People;
 			sourceTree = "<group>";
@@ -652,6 +655,7 @@
 				E1ADF7AAE0E462ED98EFA722 /* PersonCardView.swift in Sources */,
 				33587DBCDF95E48D2167708E /* PersonDetailView.swift in Sources */,
 				4D672BAB66F46A746A214020 /* PersonDetailViewModel.swift in Sources */,
+				FCFFDD1333AFD4FC4030CB46 /* PhotoGalleryView.swift in Sources */,
 				2EE0D5E2145A79D0BF0D284E /* QRPairingView.swift in Sources */,
 				CEE75D430B7BCC3080897A3C /* QuizCard.swift in Sources */,
 				D33D63220A4D650CC363B936 /* QuizCarousel.swift in Sources */,

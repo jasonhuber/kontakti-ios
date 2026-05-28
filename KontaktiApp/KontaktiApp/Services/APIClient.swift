@@ -54,7 +54,25 @@ final class APIClient {
     private init() {}
 
     private let baseURL = URL(string: "https://kontakti.app/api/v1")!
+    /// Host root, used to resolve relative asset URLs returned by the API
+    /// (e.g. `/photos/<personId>/<uuid>.jpg`). External URLs like LinkedIn's
+    /// CDN are stored as-is and should pass through `absoluteURL(forAsset:)`.
+    let assetBaseURL = URL(string: "https://kontakti.app")!
     private let keychain = KeychainService.shared
+
+    /// Resolves an asset URL stored on the backend. If `path` is already an
+    /// absolute http(s) URL it's returned as-is; otherwise it's joined onto
+    /// `assetBaseURL`. Returns nil when the input is empty / malformed.
+    func absoluteURL(forAsset path: String?) -> URL? {
+        guard let p = path?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty else {
+            return nil
+        }
+        if p.lowercased().hasPrefix("http://") || p.lowercased().hasPrefix("https://") {
+            return URL(string: p)
+        }
+        let trimmed = p.hasPrefix("/") ? String(p.dropFirst()) : p
+        return URL(string: trimmed, relativeTo: assetBaseURL)?.absoluteURL
+    }
 
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -228,6 +246,110 @@ final class APIClient {
     /// Endpoint: GET /api/v1/people/{id}/notes
     func listNotesForPerson(id: String) async throws -> [Note] {
         return try await request("people/\(id)/notes")
+    }
+
+    // MARK: - Person Photos
+
+    /// GET /api/v1/people/{id}/photos
+    func listPhotos(personId: String) async throws -> [PersonPhoto] {
+        return try await request("people/\(personId)/photos")
+    }
+
+    /// Multipart upload of a raw image file.
+    /// POST /api/v1/people/{id}/photos with field name `file`.
+    func uploadPhoto(
+        personId: String,
+        imageData: Data,
+        mimeType: String,
+        source: String = "manual_upload"
+    ) async throws -> PersonPhoto {
+        let url = baseURL.appendingPathComponent("people/\(personId)/photos")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        if let token = keychain.loadToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        let ext = mimeType.split(separator: "/").last.map(String.init) ?? "jpg"
+        let filename = "photo-\(UUID().uuidString).\(ext)"
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n".data(using: .utf8)!)
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"source\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(source)\r\n".data(using: .utf8)!)
+
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        let (data, response) = try await URLSession.shared.upload(for: request, from: body)
+        guard let http = response as? HTTPURLResponse else { throw APIError.noData }
+        if http.statusCode == 401 { throw APIError.unauthorized }
+        guard (200..<300).contains(http.statusCode) else {
+            if let err = try? decoder.decode(APIErrorResponse.self, from: data) {
+                throw APIError.serverError(err.message)
+            }
+            throw APIError.serverError("HTTP \(http.statusCode)")
+        }
+        return try decoder.decode(PersonPhoto.self, from: data)
+    }
+
+    /// JSON upload via a `data:image/...;base64,...` URL — used by the share
+    /// extension or clipboard paste flows.
+    func uploadPhotoDataURL(
+        personId: String,
+        dataURL: String,
+        source: String = "paste"
+    ) async throws -> PersonPhoto {
+        struct Body: Encodable {
+            let data: String
+            let source: String
+        }
+        return try await request(
+            "people/\(personId)/photos",
+            method: "POST",
+            body: Body(data: dataURL, source: source)
+        )
+    }
+
+    /// JSON upload via an external URL pointer (e.g. LinkedIn CDN). The
+    /// backend stores the pointer without downloading.
+    func uploadPhotoURL(
+        personId: String,
+        url: String,
+        source: String = "linkedin"
+    ) async throws -> PersonPhoto {
+        struct Body: Encodable {
+            let url: String
+            let source: String
+        }
+        return try await request(
+            "people/\(personId)/photos",
+            method: "POST",
+            body: Body(url: url, source: source)
+        )
+    }
+
+    /// DELETE /api/v1/people/{id}/photos/{photo}
+    func deletePhoto(personId: String, photoId: String) async throws {
+        try await requestVoid("people/\(personId)/photos/\(photoId)", method: "DELETE")
+    }
+
+    /// POST /api/v1/people/{id}/photos/{photo}/primary
+    @discardableResult
+    func setPrimaryPhoto(personId: String, photoId: String) async throws -> PersonPhoto {
+        return try await request(
+            "people/\(personId)/photos/\(photoId)/primary",
+            method: "POST"
+        )
     }
 
     /// Returns the tasks attached to a person (alias for getPersonTasks for naming consistency).

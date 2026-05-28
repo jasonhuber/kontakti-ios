@@ -9,14 +9,12 @@ struct ContentView: View {
                 ZStack {
                     Color(.systemBackground).ignoresSafeArea()
                     VStack(spacing: 16) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color(hex: "#4F46E5"))
-                                .frame(width: 72, height: 72)
-                            Text("K")
-                                .font(.system(size: 36, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 72, height: 72)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
                         ProgressView()
                             .scaleEffect(1.2)
                     }

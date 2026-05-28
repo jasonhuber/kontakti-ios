@@ -117,6 +117,13 @@ struct EditPersonView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Photos") {
+                    // Padding-stripped so the gallery's own horizontal padding
+                    // doesn't double up inside Form's section inset.
+                    PhotoGalleryView(personId: person.id, editable: true)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                }
+
                 Section("Emails") {
                     contactRowsEditor(rows: $emails, labels: EMAIL_LABELS, placeholder: "email@example.com", keyboard: .emailAddress, addLabel: "Add email", defaultLabel: "personal")
                 }

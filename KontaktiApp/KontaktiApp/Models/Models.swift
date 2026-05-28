@@ -226,6 +226,72 @@ struct Address: Codable, Identifiable, Hashable {
     }
 }
 
+struct PersonPhoto: Codable, Identifiable, Hashable {
+    let id: String
+    let personId: String
+    let url: String
+    let source: String
+    let isPrimary: Bool
+    let sortOrder: Int
+    let createdAt: Date?
+    let updatedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case personId = "person_id"
+        case url
+        case source
+        case isPrimary = "is_primary"
+        case sortOrder = "sort_order"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+
+    init(
+        id: String,
+        personId: String,
+        url: String,
+        source: String = "manual_upload",
+        isPrimary: Bool = false,
+        sortOrder: Int = 0,
+        createdAt: Date? = nil,
+        updatedAt: Date? = nil
+    ) {
+        self.id = id
+        self.personId = personId
+        self.url = url
+        self.source = source
+        self.isPrimary = isPrimary
+        self.sortOrder = sortOrder
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        if let s = try? c.decode(String.self, forKey: .id) {
+            id = s
+        } else if let i = try? c.decode(Int.self, forKey: .id) {
+            id = String(i)
+        } else {
+            id = UUID().uuidString
+        }
+        if let s = try? c.decode(String.self, forKey: .personId) {
+            personId = s
+        } else if let i = try? c.decode(Int.self, forKey: .personId) {
+            personId = String(i)
+        } else {
+            personId = ""
+        }
+        url = (try? c.decode(String.self, forKey: .url)) ?? ""
+        source = (try? c.decodeIfPresent(String.self, forKey: .source)) ?? "manual_upload"
+        isPrimary = (try? c.decodeIfPresent(Bool.self, forKey: .isPrimary)) ?? false
+        sortOrder = (try? c.decodeIfPresent(Int.self, forKey: .sortOrder)) ?? 0
+        createdAt = try? c.decodeIfPresent(Date.self, forKey: .createdAt)
+        updatedAt = try? c.decodeIfPresent(Date.self, forKey: .updatedAt)
+    }
+}
+
 struct PersonURL: Codable, Identifiable, Hashable {
     var id: String { "\(label)|\(value)" }
     var label: String
@@ -259,6 +325,7 @@ struct Person: Decodable, Identifiable {
     let phones: [PersonPhone]
     let linkedinUrl: String?
     let avatarUrl: String?
+    let photos: [PersonPhoto]
     let companyId: String?
     let company: Company?
     let title: String?
@@ -308,6 +375,7 @@ struct Person: Decodable, Identifiable {
         case phones
         case linkedinUrl = "linkedin_url"
         case avatarUrl = "avatar_url"
+        case photos
         case companyId = "company_id"
         case company
         case title
@@ -354,6 +422,7 @@ struct Person: Decodable, Identifiable {
         phones: [PersonPhone] = [],
         linkedinUrl: String? = nil,
         avatarUrl: String? = nil,
+        photos: [PersonPhoto] = [],
         companyId: String? = nil,
         company: Company? = nil,
         title: String? = nil,
@@ -398,6 +467,7 @@ struct Person: Decodable, Identifiable {
         self.phones = phones
         self.linkedinUrl = linkedinUrl
         self.avatarUrl = avatarUrl
+        self.photos = photos
         self.companyId = companyId
         self.company = company
         self.title = title
@@ -445,6 +515,7 @@ struct Person: Decodable, Identifiable {
         phones = (try? c.decode([PersonPhone].self, forKey: .phones)) ?? []
         linkedinUrl = try? c.decode(String.self, forKey: .linkedinUrl)
         avatarUrl = try? c.decode(String.self, forKey: .avatarUrl)
+        photos = (try? c.decodeIfPresent([PersonPhoto].self, forKey: .photos)) ?? []
         companyId = try? c.decode(String.self, forKey: .companyId)
         company = try? c.decode(Company.self, forKey: .company)
         title = try? c.decode(String.self, forKey: .title)

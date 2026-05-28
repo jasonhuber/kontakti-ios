@@ -23,14 +23,12 @@ struct LoginView: View {
 
                     // Logo & Branding
                     VStack(spacing: 16) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color(hex: "#4F46E5"))
-                                .frame(width: 88, height: 88)
-                            Text("K")
-                                .font(.system(size: 44, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 88, height: 88)
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
 
                         VStack(spacing: 4) {
                             Text("Kontakti")

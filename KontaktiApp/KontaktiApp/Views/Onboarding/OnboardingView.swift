@@ -60,14 +60,12 @@ private struct WelcomeStep: View {
         VStack(spacing: 0) {
             Spacer()
             VStack(spacing: 28) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 32)
-                        .fill(Color(hex: "#4F46E5"))
-                        .frame(width: 112, height: 112)
-                    Text("K")
-                        .font(.system(size: 60, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                }
+                Image("AppLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 112, height: 112)
+                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
                 VStack(spacing: 10) {
                     Text("Welcome to Kontakti")
                         .font(.largeTitle).fontWeight(.bold)

@@ -18,7 +18,7 @@ struct PersonDetailView: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 8) {
-                    AvatarView(name: displayPerson.fullName, size: 72)
+                    PersonAvatarOrInitials(person: displayPerson, size: 72)
                     Text(displayPerson.fullName)
                         .font(.title2)
                         .fontWeight(.bold)
@@ -36,6 +36,12 @@ struct PersonDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
                 .padding(.horizontal, 16)
+
+                // Photos (read-only on the detail; editing happens in EditPersonView)
+                if !displayPerson.photos.isEmpty {
+                    PhotoGalleryView(personId: displayPerson.id, editable: false)
+                        .padding(.bottom, 16)
+                }
 
                 // Stats row
                 HStack(spacing: 0) {
@@ -277,7 +283,12 @@ struct PersonDetailView: View {
                 .tint(indigo)
             }
         }
-        .sheet(isPresented: $showEdit) {
+        .sheet(isPresented: $showEdit, onDismiss: {
+            // Photo edits inside the sheet mutate server state directly and
+            // don't fire the onSaved callback, so refresh on every dismissal
+            // to keep the cached avatar / gallery in sync.
+            Task { await vm.refresh() }
+        }) {
             EditPersonView(person: displayPerson) { _ in
                 Task { await vm.refresh() }
             }
@@ -551,6 +562,38 @@ struct ActivityRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - PersonAvatarOrInitials
+
+/// Renders the primary avatar image when `Person.avatarUrl` is set, falling
+/// back to the initials-based `AvatarView`. Relative `/photos/...` URLs are
+/// resolved through `APIClient.absoluteURL(forAsset:)`.
+struct PersonAvatarOrInitials: View {
+    let person: Person
+    var size: CGFloat = 72
+
+    var body: some View {
+        if let url = APIClient.shared.absoluteURL(forAsset: person.avatarUrl) {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipShape(Circle())
+                case .failure, .empty:
+                    AvatarView(name: person.fullName, size: size)
+                @unknown default:
+                    AvatarView(name: person.fullName, size: size)
+                }
+            }
+            .frame(width: size, height: size)
+        } else {
+            AvatarView(name: person.fullName, size: size)
+        }
     }
 }
 
