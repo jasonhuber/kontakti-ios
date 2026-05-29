@@ -99,14 +99,18 @@ final class GoogleAuthService: ObservableObject {
     //
     // Performs a fresh Google sign-in solely to obtain a fresh id_token for the
     // backend to verify and link a secondary Gmail account to the existing
-    // Kontakti user. Does NOT mutate `accessToken` / `isSignedIn` on this
-    // service — the primary user session is preserved.
+    // Kontakti user.
     //
-    // Note: GIDSignIn always signs out any previously signed-in user as part of
-    // calling `signIn(...)`. For linking flows we restore the previous session
-    // immediately afterward via `restorePreviousSignIn` so the primary session
-    // for Gmail-reads continues to work. The fresh id_token returned here is
-    // what the server uses to identify the *new* account being linked.
+    // IMPORTANT: GIDSignIn only tracks one user session at a time. Calling
+    // signIn(...) for a new account permanently replaces the previous session in
+    // GIDSignIn's keychain — there is no reliable way to restore the primary
+    // account afterward without a new sign-in flow. After this call:
+    //   - isSignedIn is set to false
+    //   - accessToken is cleared
+    //   - GIDSignIn.sharedInstance.currentUser reflects the newly linked account
+    //
+    // Callers should prompt the user to re-sign-in with Google if Gmail sync is
+    // needed after linking a new account.
     func signInForLinking(presentingViewController: UIViewController) async throws -> String {
         guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String,
               !clientID.isEmpty else {
@@ -115,10 +119,6 @@ final class GoogleAuthService: ObservableObject {
 
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
-
-        // Remember the previous primary state so we can advertise it again.
-        let previousAccessToken = accessToken
-        let previousIsSignedIn = isSignedIn
 
         let idToken: String = try await withCheckedThrowingContinuation { continuation in
             GIDSignIn.sharedInstance.signIn(
@@ -138,13 +138,12 @@ final class GoogleAuthService: ObservableObject {
             }
         }
 
-        // Restore previous primary state (best-effort; GIDSignIn keeps the most
-        // recent user in its own session — this just keeps our @Published flags
-        // consistent for the rest of the app).
-        if previousIsSignedIn, previousAccessToken != nil {
-            self.accessToken = previousAccessToken
-            self.isSignedIn = true
-        }
+        // The GIDSignIn session now belongs to the newly linked account.
+        // Sign it out and clear our published state so the rest of the app
+        // does not silently use the wrong (or expired) token for Gmail reads.
+        GIDSignIn.sharedInstance.signOut()
+        accessToken = nil
+        isSignedIn = false
 
         return idToken
     }

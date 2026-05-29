@@ -166,9 +166,9 @@ struct DraftMessageSheet: View {
                 case .success(let text):
                     messageText = text
                     draftError = nil
-                case .failure(let message):
+                case .failure(let error):
                     messageText = ""
-                    draftError = message
+                    draftError = error.localizedDescription
                 }
                 isLoadingDraft = false
             }

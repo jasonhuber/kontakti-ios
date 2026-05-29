@@ -130,7 +130,7 @@ struct PeopleListView: View {
             }
         }
         .searchable(text: $vm.searchText, prompt: "Search people")
-        .onChange(of: vm.searchText) { _ in
+        .onChange(of: vm.searchText) {
             vm.onSearchChange()
         }
         .task {

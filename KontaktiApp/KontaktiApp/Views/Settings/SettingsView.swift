@@ -242,10 +242,12 @@ final class SettingsViewModel: ObservableObject {
         do {
             let idToken = try await GoogleAuthService.shared.signInForLinking(presentingViewController: rootVC)
             _ = try await api.linkGoogleAccount(idToken: idToken, label: nil)
-            await loadAccounts()
         } catch {
             accountsError = error.localizedDescription
         }
+        // Always reload so the UI reflects actual server state, whether the
+        // link succeeded, partially applied, or failed.
+        await loadAccounts()
     }
 
     func makePrimary(_ account: GoogleAccount) async {
