@@ -88,14 +88,14 @@ final class TodayViewModel: ObservableObject {
     /// Variant that returns either the draft text or a server-supplied error
     /// message (e.g. the do-not-contact 422 response). Used by the draft sheet
     /// to display refusals inline instead of swallowing them as empty text.
-    func draftResult(for item: TodayItem) async -> Result<String, String> {
+    func draftResult(for item: TodayItem) async -> Result<String, Error> {
         if let suggested = item.suggestedMessage, !suggested.isEmpty {
             return .success(suggested)
         }
         do {
             return .success(try await api.draftMessage(itemKey: item.id))
         } catch {
-            return .failure(error.localizedDescription)
+            return .failure(error)
         }
     }
 
@@ -104,9 +104,9 @@ final class TodayViewModel: ObservableObject {
     /// Submit an answer; on success removes the prompt from the queue and
     /// nudges the session counter so we can show the "saved N answers" toast.
     @discardableResult
-    func answerPrompt(_ prompt: ContactPrompt, answer: String, structured: [String: Any]? = nil) async -> Bool {
+    func answerPrompt(_ prompt: ContactPrompt, answer: String, structured: [String: Any]? = nil, note: String? = nil) async -> Bool {
         do {
-            _ = try await api.answerQuiz(promptId: prompt.id, answer: answer, structured: structured)
+            _ = try await api.answerQuiz(promptId: prompt.id, answer: answer, structured: structured, note: note)
             quiz.removeAll { $0.id == prompt.id }
             answeredThisSession += 1
             if quiz.isEmpty && answeredThisSession > 0 {

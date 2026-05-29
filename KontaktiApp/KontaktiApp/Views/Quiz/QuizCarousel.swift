@@ -41,12 +41,12 @@ struct QuizCarousel: View {
                     ForEach(vm.quiz) { prompt in
                         QuizCard(
                             prompt: prompt,
-                            onAnswer: { answer in
+                            onAnswer: { answer, note in
                                 Task {
                                     withAnimation(.easeInOut(duration: 0.25)) {
                                         // Trigger SwiftUI to animate the card out
                                     }
-                                    await vm.answerPrompt(prompt, answer: answer)
+                                    await vm.answerPrompt(prompt, answer: answer, note: note)
                                 }
                             },
                             onSkip: { permanent in

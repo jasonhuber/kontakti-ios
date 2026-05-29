@@ -39,8 +39,8 @@ struct QuizSessionView: View {
                         ForEach(Array(queue.enumerated()), id: \.element.id) { idx, prompt in
                             QuizCard(
                                 prompt: prompt,
-                                onAnswer: { answer in
-                                    Task { await handleAnswer(prompt, answer: answer) }
+                                onAnswer: { answer, note in
+                                    Task { await handleAnswer(prompt, answer: answer, note: note) }
                                 },
                                 onSkip: { permanent in
                                     Task { await handleSkip(prompt, permanent: permanent) }
@@ -125,8 +125,8 @@ struct QuizSessionView: View {
 
     // MARK: - Actions
 
-    private func handleAnswer(_ prompt: ContactPrompt, answer: String) async {
-        let ok = await vm.answerPrompt(prompt, answer: answer)
+    private func handleAnswer(_ prompt: ContactPrompt, answer: String, note: String? = nil) async {
+        let ok = await vm.answerPrompt(prompt, answer: answer, note: note)
         if ok {
             answered.insert(prompt.id)
             advance()

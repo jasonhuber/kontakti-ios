@@ -560,12 +560,20 @@ final class APIClient {
     }
 
     /// POST /quiz/{prompt}/answer — returns the updated person.
-    func answerQuiz(promptId: String, answer: String, structured: [String: Any]? = nil) async throws -> Person {
+    /// `note` is an optional free-text note saved as a Note on the person so the
+    /// AI can use it later to decide how/why to reach out.
+    func answerQuiz(promptId: String, answer: String, structured: [String: Any]? = nil, note: String? = nil) async throws -> Person {
         struct Body: Encodable {
             let answer: String
             let structured: AnyEncodable?
+            let note: String?
         }
-        let body = Body(answer: answer, structured: structured.map(AnyEncodable.init))
+        let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = Body(
+            answer: answer,
+            structured: structured.map(AnyEncodable.init),
+            note: (trimmedNote?.isEmpty == false) ? trimmedNote : nil
+        )
         let response: PersonResponse = try await request("quiz/\(promptId)/answer", method: "POST", body: body)
         return response.person
     }

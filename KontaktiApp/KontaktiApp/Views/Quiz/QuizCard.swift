@@ -4,8 +4,9 @@ import SwiftUI
 /// the full-screen quiz session. Owns its own free-text state for `notable`.
 struct QuizCard: View {
     let prompt: ContactPrompt
-    /// User picked a suggested response or typed a custom answer.
-    let onAnswer: (String) -> Void
+    /// User picked a suggested response or typed a custom answer. The optional
+    /// `note` carries a free-text note saved on the person for the AI to use.
+    let onAnswer: (_ answer: String, _ note: String?) -> Void
     /// User tapped Skip. The optional `permanent` flag carries the
     /// "don't ask about this person again" decision up.
     let onSkip: (_ permanent: Bool) -> Void
@@ -14,8 +15,14 @@ struct QuizCard: View {
     var showsPermanentSkip: Bool = false
 
     @State private var freeText: String = ""
+    @State private var note: String = ""
 
     private let indigo = Color(red: 0.31, green: 0.27, blue: 0.90)
+
+    private var trimmedNote: String? {
+        let t = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        return t.isEmpty ? nil : t
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -57,6 +64,18 @@ struct QuizCard: View {
                 }
             }
 
+            // Optional free-text note — saved as a real Note on the person so
+            // the AI can use it later to decide how/why to reach out. Rides
+            // along with whichever answer (chip or custom) the user picks.
+            TextField(
+                "Add a note (optional) — how you know them, anything to remember…",
+                text: $note,
+                axis: .vertical
+            )
+            .textFieldStyle(.roundedBorder)
+            .font(.footnote)
+            .lineLimit(1...4)
+
             // Footer actions
             HStack(spacing: 12) {
                 Button("Skip") { onSkip(false) }
@@ -84,7 +103,7 @@ struct QuizCard: View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
             ForEach(prompt.suggestedResponses, id: \.self) { response in
                 Button {
-                    onAnswer(response)
+                    onAnswer(response, trimmedNote)
                 } label: {
                     Text(response)
                         .font(.footnote.weight(.medium))
@@ -111,8 +130,9 @@ struct QuizCard: View {
             Button {
                 let trimmed = freeText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else { return }
-                onAnswer(trimmed)
+                onAnswer(trimmed, trimmedNote)
                 freeText = ""
+                note = ""
             } label: {
                 Text("Save")
                     .font(.footnote.weight(.semibold))
