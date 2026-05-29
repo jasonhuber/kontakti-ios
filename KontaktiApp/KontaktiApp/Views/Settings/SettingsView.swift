@@ -96,6 +96,17 @@ struct SettingsView: View {
                 }
             }
 
+            // MARK: Apple Contacts backup
+            Section {
+                AppleContactLinkBackupRow()
+            } header: {
+                Text("Apple Contacts")
+            } footer: {
+                Text("When on, the link between each contact and their iPhone Contacts record is backed up to your account. Re-installing the app restores it automatically.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
             // MARK: Notifications
             Section {
                 NotificationsSettingsRow()
@@ -311,6 +322,38 @@ private struct NotificationsSettingsRow: View {
                 UserDefaults.standard.removeObject(forKey: AppDelegate.tokenDefaultsKey)
             } catch {
                 print("[Push] Unregister failed: \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - AppleContactLinkBackupRow
+
+private struct AppleContactLinkBackupRow: View {
+    @State private var enabled: Bool = AppleContactLinkBackup.isEnabled
+    @State private var restoring = false
+
+    var body: some View {
+        Toggle(isOn: $enabled) {
+            Label("Back up contact links", systemImage: "icloud.and.arrow.up")
+        }
+        .onChange(of: enabled) { _, newValue in
+            AppleContactLinkBackup.isEnabled = newValue
+            if newValue {
+                Task {
+                    restoring = true
+                    await OfflineStore.shared.restoreAppleContactLinksFromCloud()
+                    restoring = false
+                }
+            }
+        }
+
+        if restoring {
+            HStack(spacing: 6) {
+                ProgressView().scaleEffect(0.8)
+                Text("Restoring links…")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
     }

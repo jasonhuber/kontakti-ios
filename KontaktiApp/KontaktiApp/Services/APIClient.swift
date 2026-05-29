@@ -803,6 +803,45 @@ final class APIClient {
         let body = UnregisterPushTokenRequest(token: token)
         try await requestVoid("push/register", method: "DELETE", body: body)
     }
+
+    // MARK: - Apple Contact Links (opt-in cloud backup)
+
+    func listAppleContactLinks() async throws -> [AppleContactLinkRecord] {
+        return try await request("apple-contact-links")
+    }
+
+    func bulkUpsertAppleContactLinks(_ links: [AppleContactLinkRecord]) async throws -> AppleContactLinkUpsertResult {
+        let body = AppleContactLinkBulkRequest(links: links)
+        return try await request("apple-contact-links", method: "POST", body: body)
+    }
+
+    func deleteAppleContactLink(personId: String) async throws {
+        try await requestVoid("apple-contact-links/\(personId)", method: "DELETE")
+    }
+}
+
+// MARK: - Apple Contact Link Models
+
+struct AppleContactLinkRecord: Codable {
+    let personId: String
+    let cnContactIdentifier: String
+    let deviceLabel: String?
+    let updatedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case personId             = "person_id"
+        case cnContactIdentifier  = "cn_contact_identifier"
+        case deviceLabel          = "device_label"
+        case updatedAt            = "updated_at"
+    }
+}
+
+struct AppleContactLinkBulkRequest: Encodable {
+    let links: [AppleContactLinkRecord]
+}
+
+struct AppleContactLinkUpsertResult: Decodable {
+    let upserted: Int
 }
 
 // MARK: - Voice capture models

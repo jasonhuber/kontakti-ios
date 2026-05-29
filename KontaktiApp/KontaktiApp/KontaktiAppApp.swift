@@ -17,6 +17,10 @@ struct KontaktiAppApp: App {
                 .environmentObject(deepLink)
                 .modelContainer(PersistenceController.shared.container)
                 .task { await authVM.initialize() }
+                .task {
+                    guard AppleContactLinkBackup.isEnabled else { return }
+                    await OfflineStore.shared.restoreAppleContactLinksFromCloud()
+                }
                 .onReceive(networkMonitor.$isConnected.removeDuplicates()) { isConnected in
                     guard isConnected, authVM.isAuthenticated else { return }
                     Task { await SyncQueue.shared.flush() }

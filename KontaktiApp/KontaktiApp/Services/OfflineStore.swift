@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UIKit
 
 /// Singleton wrapper around the SwiftData ModelContext.
 /// Reads and writes cached records used when the API is unreachable.
@@ -164,6 +165,7 @@ final class OfflineStore {
     }
 
     /// Upserts the `(personId -> CNContact.identifier)` mapping.
+    /// If the user has opted into cloud backup, also queues a backend sync.
     func setAppleContactIdentifier(_ identifier: String, for personId: String) {
         var descriptor = FetchDescriptor<AppleContactLinkEntity>(
             predicate: #Predicate { $0.personId == personId }
@@ -176,6 +178,18 @@ final class OfflineStore {
             context.insert(AppleContactLinkEntity(personId: personId, cnContactIdentifier: identifier))
         }
         try? context.save()
+
+        if AppleContactLinkBackup.isEnabled {
+            Task {
+                let record = AppleContactLinkRecord(
+                    personId: personId,
+                    cnContactIdentifier: identifier,
+                    deviceLabel: UIDevice.current.name,
+                    updatedAt: nil
+                )
+                try? await APIClient.shared.bulkUpsertAppleContactLinks([record])
+            }
+        }
     }
 
     /// Removes the Apple Contacts link for a person, if any.
@@ -188,5 +202,43 @@ final class OfflineStore {
             context.delete(existing)
             try? context.save()
         }
+
+        if AppleContactLinkBackup.isEnabled {
+            Task { try? await APIClient.shared.deleteAppleContactLink(personId: personId) }
+        }
+    }
+
+    /// Fetches all links from the backend and restores any that are missing locally.
+    /// Call on app launch when `AppleContactLinkBackup.isEnabled`.
+    func restoreAppleContactLinksFromCloud() async {
+        guard let links = try? await APIClient.shared.listAppleContactLinks() else { return }
+        for link in links {
+            if appleContactIdentifier(for: link.personId) == nil {
+                var descriptor = FetchDescriptor<AppleContactLinkEntity>(
+                    predicate: #Predicate { $0.personId == link.personId }
+                )
+                descriptor.fetchLimit = 1
+                if (try? context.fetch(descriptor).first) == nil {
+                    context.insert(AppleContactLinkEntity(
+                        personId: link.personId,
+                        cnContactIdentifier: link.cnContactIdentifier
+                    ))
+                }
+            }
+        }
+        try? context.save()
+    }
+}
+
+// MARK: - AppleContactLinkBackup
+
+/// Thin UserDefaults wrapper so the toggle value is accessible from
+/// OfflineStore without importing SwiftUI.
+enum AppleContactLinkBackup {
+    private static let key = "backup_apple_contact_links"
+
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: key) }
+        set { UserDefaults.standard.set(newValue, forKey: key) }
     }
 }
