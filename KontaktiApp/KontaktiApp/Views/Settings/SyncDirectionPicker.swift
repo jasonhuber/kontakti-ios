@@ -119,7 +119,7 @@ struct SyncDirectionPicker: View {
         let deviceEmails = (try? await fetchDeviceEmails()) ?? Set<String>()
 
         // 2. Cached "known to Kontakti" emails — proxies "already in some Gmail".
-        let known = await OfflineStore.shared.cachedEmails()
+        let known = OfflineStore.shared.cachedEmails()
 
         let extras = deviceEmails.subtracting(known)
         deviceNotInGmailCount = extras.count

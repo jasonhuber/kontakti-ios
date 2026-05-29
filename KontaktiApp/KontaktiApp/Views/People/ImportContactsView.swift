@@ -136,7 +136,7 @@ struct ImportContactsView: View {
         do {
             if NetworkMonitor.shared.isConnected {
                 let result = try await api.importContacts(BulkImportRequest(contacts: toImport))
-                await OfflineStore.shared.upsertPeople(result.people)
+                OfflineStore.shared.upsertPeople(result.people)
                 successTitle = "Imported!"
                 var msg = "Imported \(result.imported), skipped \(result.skipped + skippedBeforeImport)."
                 if result.autoMerged > 0 {

@@ -296,7 +296,7 @@ struct LinkedInImportView: View {
 
         do {
             let person = try await api.createPerson(req)
-            await OfflineStore.shared.upsertPeople([person])
+            OfflineStore.shared.upsertPeople([person])
             dismiss()
             onDismiss?()
         } catch {

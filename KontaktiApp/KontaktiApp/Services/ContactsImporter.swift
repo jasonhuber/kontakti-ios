@@ -116,7 +116,7 @@ final class ContactsImporter: ObservableObject {
     func fetchNewCandidates() async throws -> [ImportCandidate] {
         try await requestAccess()
         let all = try fetchAllDeviceContacts()
-        let existingEmails = await OfflineStore.shared.cachedEmails()
+        let existingEmails = OfflineStore.shared.cachedEmails()
         return all.filter { candidate in
             guard let email = candidate.email?.lowercased() else { return true }
             return !existingEmails.contains(email)
@@ -175,7 +175,7 @@ final class ContactsImporter: ObservableObject {
     private func runReadFromDevice() async throws -> SyncRunResult {
         try await requestAccess()
         let raw = try fetchAllDeviceContacts()
-        let existingEmails = await OfflineStore.shared.cachedEmails()
+        let existingEmails = OfflineStore.shared.cachedEmails()
         let filtered = raw.filter { c in
             guard let e = c.email?.lowercased() else { return true }
             return !existingEmails.contains(e)
@@ -247,7 +247,7 @@ final class ContactsImporter: ObservableObject {
 
         let req = BulkImportRequest(contacts: normalized, googleAccountId: googleAccountId)
         let response = try await api.importContacts(req)
-        await OfflineStore.shared.upsertPeople(response.people)
+        OfflineStore.shared.upsertPeople(response.people)
 
         var result = SyncRunResult()
         result.imported = response.imported

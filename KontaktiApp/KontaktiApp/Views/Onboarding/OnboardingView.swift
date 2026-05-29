@@ -189,7 +189,7 @@ private struct PhoneStep: View {
             }
 
             let result = try await APIClient.shared.importContacts(BulkImportRequest(contacts: normalized))
-            await OfflineStore.shared.upsertPeople(result.people)
+            OfflineStore.shared.upsertPeople(result.people)
             phase = .done(result.imported)
         } catch {
             importError = error.localizedDescription
@@ -321,7 +321,7 @@ private struct GoogleStep: View {
             }
 
             let result = try await APIClient.shared.importContacts(BulkImportRequest(contacts: normalized))
-            await OfflineStore.shared.upsertPeople(result.people)
+            OfflineStore.shared.upsertPeople(result.people)
             phase = .done(result.imported)
         } catch {
             importError = error.localizedDescription

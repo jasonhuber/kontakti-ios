@@ -187,7 +187,7 @@ final class OfflineStore {
                     deviceLabel: UIDevice.current.name,
                     updatedAt: nil
                 )
-                try? await APIClient.shared.bulkUpsertAppleContactLinks([record])
+                _ = try? await APIClient.shared.bulkUpsertAppleContactLinks([record])
             }
         }
     }
