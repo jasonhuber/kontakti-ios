@@ -26,7 +26,7 @@ struct SearchView: View {
                     TextField("Search people, companies...", text: $vm.query)
                         .focused($isSearchFocused)
                         .submitLabel(.search)
-                        .onChange(of: vm.query) { _ in
+                        .onChange(of: vm.query) {
                             vm.onQueryChange()
                         }
                     if !vm.query.isEmpty {

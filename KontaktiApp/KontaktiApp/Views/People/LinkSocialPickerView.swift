@@ -91,7 +91,7 @@ struct LinkSocialPickerView: View {
                     }
                 }
                 .searchable(text: $query, prompt: "Search people")
-                .onChange(of: query) { _ in Task { await search() } }
+                .onChange(of: query) { Task { await search() } }
             }
             .navigationTitle("Link social")
             .navigationBarTitleDisplayMode(.inline)

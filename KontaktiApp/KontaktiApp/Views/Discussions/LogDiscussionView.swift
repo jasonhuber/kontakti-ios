@@ -50,7 +50,7 @@ struct LogDiscussionView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
                         TextField("Search people...", text: $participantSearch)
-                            .onChange(of: participantSearch) { query in
+                            .onChange(of: participantSearch) { _, query in
                                 guard query.count >= 2 else {
                                     searchResults = []
                                     return

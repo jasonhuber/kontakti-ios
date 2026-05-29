@@ -387,7 +387,7 @@ struct PersonSearchPicker: View {
                 }
             }
             .searchable(text: $query, prompt: "Search people")
-            .onChange(of: query) { _ in
+            .onChange(of: query) {
                 Task { await search() }
             }
             .navigationTitle("Pick person")

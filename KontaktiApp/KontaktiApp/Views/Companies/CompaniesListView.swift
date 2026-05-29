@@ -46,7 +46,7 @@ struct CompaniesListView: View {
         .navigationTitle("Companies")
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $vm.searchText, prompt: "Search companies")
-        .onChange(of: vm.searchText) { _ in
+        .onChange(of: vm.searchText) {
             vm.onSearchChange()
         }
         .task {

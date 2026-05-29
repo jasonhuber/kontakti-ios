@@ -26,10 +26,10 @@ struct DiscussionsListView: View {
             LogDiscussionView(vm: vm)
         }
         .searchable(text: $vm.searchText, prompt: "Search discussions")
-        .onChange(of: vm.searchText) { _ in
+        .onChange(of: vm.searchText) {
             vm.onSearchChange()
         }
-        .onChange(of: vm.selectedType) { _ in
+        .onChange(of: vm.selectedType) {
             Task { await vm.load() }
         }
         .task {
