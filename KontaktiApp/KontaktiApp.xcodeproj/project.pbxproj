@@ -23,6 +23,7 @@
 		2EE0D5E2145A79D0BF0D284E /* QRPairingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0A863603FFA4BD621870AA /* QRPairingView.swift */; };
 		31A69C0324D4725489157D46 /* VoiceRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71FEFE164EDD31F5AB32C48 /* VoiceRecordingView.swift */; };
 		33587DBCDF95E48D2167708E /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56323189271D5B49AD1E4D5F /* PersonDetailView.swift */; };
+		384190ADFCA6E942639D4AF0 /* AppleContactsWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044708C1586A8B1E56E1D93B /* AppleContactsWriter.swift */; };
 		3B13C8E3854D2D30138E769E /* SyncQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E035FF380872DEE0DD9E3 /* SyncQueue.swift */; };
 		3E4294E361B2C4A981AA0814 /* CompaniesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74E773C79EB7937577DC16B4 /* CompaniesListView.swift */; };
 		40B92D968887FD272E9E8298 /* TodayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A029388D569BD9EE4A36004 /* TodayViewModel.swift */; };
@@ -51,6 +52,7 @@
 		8281EA717CE9729316FC31D9 /* DNCBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD90B91A7272392D82BF6EE /* DNCBadge.swift */; };
 		8671280603FF3D4898927727 /* ImportContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 266B87E31F87A7B74C1E9F1F /* ImportContactsView.swift */; };
 		8ACA9357AB5FC9995BD8D0D9 /* LinkSocialPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E147B23D0F56165AFF4660 /* LinkSocialPickerView.swift */; };
+		8DF397C2C6AC6797F741AFF0 /* AppleContactsWritebackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C79E3202B5D0E972DF79FCD /* AppleContactsWritebackView.swift */; };
 		9452CAB6DCD2A038914379C2 /* KontaktiShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E6D1E797CE30C6DBA5C8921E /* KontaktiShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		97B201F61841F3B19B665DA1 /* GroupImportWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62691CCFFEBC7BF61765341D /* GroupImportWizardView.swift */; };
 		9D49DF3984C003463D3F10AD /* DraftMessageSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769F6B96460DCBCC7B52349 /* DraftMessageSheet.swift */; };
@@ -122,6 +124,7 @@
 
 /* Begin PBXFileReference section */
 		004536DFB2D28320EC9D7AE6 /* PhotoGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGalleryView.swift; sourceTree = "<group>"; };
+		044708C1586A8B1E56E1D93B /* AppleContactsWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleContactsWriter.swift; sourceTree = "<group>"; };
 		04CD75380D7D9595D52CDD63 /* DiscussionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscussionsViewModel.swift; sourceTree = "<group>"; };
 		0C02BAE513C5EF69C094FF36 /* QuizSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizSessionView.swift; sourceTree = "<group>"; };
 		0C6F5CF630E4C6E9F4190511 /* PersonCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonCardView.swift; sourceTree = "<group>"; };
@@ -171,6 +174,7 @@
 		74E773C79EB7937577DC16B4 /* CompaniesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompaniesListView.swift; sourceTree = "<group>"; };
 		776A40E70177AF534E1CC40E /* SyncDirectionPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncDirectionPicker.swift; sourceTree = "<group>"; };
 		7A6E035FF380872DEE0DD9E3 /* SyncQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueue.swift; sourceTree = "<group>"; };
+		7C79E3202B5D0E972DF79FCD /* AppleContactsWritebackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleContactsWritebackView.swift; sourceTree = "<group>"; };
 		7EDC76B4B27D767D164581C9 /* StrengthBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrengthBadgeView.swift; sourceTree = "<group>"; };
 		7FACA465274AB22F8D1E2AFC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		87F9A7EFA1DFFCC67314C2FE /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
@@ -222,6 +226,7 @@
 		096ADA368A7EF4D068F283E9 /* People */ = {
 			isa = PBXGroup;
 			children = (
+				7C79E3202B5D0E972DF79FCD /* AppleContactsWritebackView.swift */,
 				FF0EDEE6203EC622D9E4E3D7 /* EditPersonView.swift */,
 				266B87E31F87A7B74C1E9F1F /* ImportContactsView.swift */,
 				3CF06D9978AB87C74BB23D6F /* LinkedInImportView.swift */,
@@ -406,6 +411,7 @@
 			children = (
 				0F5A6C574C7E4055DCDE65B7 /* APIClient.swift */,
 				31296195A98623CBECE71310 /* AppDelegate.swift */,
+				044708C1586A8B1E56E1D93B /* AppleContactsWriter.swift */,
 				ED9C80D5A98D87FD03719732 /* ContactsImporter.swift */,
 				307B186F7D44B964BCD0A333 /* DeepLinkRouter.swift */,
 				C9BFC6CFAA46A894E8DADE9D /* EnrichmentSecrets.swift */,
@@ -610,6 +616,8 @@
 			files = (
 				2709D24FEDAEE3236D6A5066 /* APIClient.swift in Sources */,
 				41C90802835C14C9E6496935 /* AppDelegate.swift in Sources */,
+				8DF397C2C6AC6797F741AFF0 /* AppleContactsWritebackView.swift in Sources */,
+				384190ADFCA6E942639D4AF0 /* AppleContactsWriter.swift in Sources */,
 				12B6AAA82DC74BD7D49B767F /* AuthViewModel.swift in Sources */,
 				CBF12571A11BFD66FA5171A3 /* AvatarView.swift in Sources */,
 				3E4294E361B2C4A981AA0814 /* CompaniesListView.swift in Sources */,

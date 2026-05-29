@@ -126,6 +126,12 @@ struct PersonDetailView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
+                // Apple Contacts writeback — hidden for do-not-contact people
+                // and when Contacts access hasn't been granted. Section makes
+                // its own decision; we always render it and let it no-op.
+                AppleContactsWritebackSection(person: displayPerson)
+                    .padding(.bottom, 16)
+
                 // Tags
                 if !displayPerson.tags.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {

@@ -20,10 +20,14 @@ final class OfflineStore {
     /// Wipes all locally cached data (people, companies, discussions).
     /// Call this on logout or after a server-side data wipe so stale records
     /// don't survive the next load cycle.
+    ///
+    /// Apple Contacts links are also cleared — they're per-device-and-user, so
+    /// signing out as one user shouldn't leave the next user with stray links.
     func clearAll() {
         try? context.delete(model: PersonEntity.self)
         try? context.delete(model: CompanyEntity.self)
         try? context.delete(model: DiscussionEntity.self)
+        try? context.delete(model: AppleContactLinkEntity.self)
         try? context.save()
     }
 
@@ -140,5 +144,49 @@ final class OfflineStore {
     func cachedEmails() -> Set<String> {
         let people = fetchPeople()
         return Set(people.compactMap { $0.email?.lowercased() })
+    }
+
+    // MARK: - Apple Contacts link mapping
+    //
+    // Local-only mapping (`kontakti_person_id -> CNContact.identifier`) used by
+    // AppleContactsWriter. See AppleContactLinkEntity for the why-local-only
+    // rationale; in short, CNContact identifiers are per-device and would just
+    // diverge across devices if the backend tried to be the source of truth.
+
+    /// Returns the linked Apple Contacts identifier for a Kontakti person,
+    /// or `nil` if there's no link yet.
+    func appleContactIdentifier(for personId: String) -> String? {
+        var descriptor = FetchDescriptor<AppleContactLinkEntity>(
+            predicate: #Predicate { $0.personId == personId }
+        )
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor).first)?.cnContactIdentifier
+    }
+
+    /// Upserts the `(personId -> CNContact.identifier)` mapping.
+    func setAppleContactIdentifier(_ identifier: String, for personId: String) {
+        var descriptor = FetchDescriptor<AppleContactLinkEntity>(
+            predicate: #Predicate { $0.personId == personId }
+        )
+        descriptor.fetchLimit = 1
+        if let existing = try? context.fetch(descriptor).first {
+            existing.cnContactIdentifier = identifier
+            existing.updatedAt = Date()
+        } else {
+            context.insert(AppleContactLinkEntity(personId: personId, cnContactIdentifier: identifier))
+        }
+        try? context.save()
+    }
+
+    /// Removes the Apple Contacts link for a person, if any.
+    func clearAppleContactIdentifier(for personId: String) {
+        var descriptor = FetchDescriptor<AppleContactLinkEntity>(
+            predicate: #Predicate { $0.personId == personId }
+        )
+        descriptor.fetchLimit = 1
+        if let existing = try? context.fetch(descriptor).first {
+            context.delete(existing)
+            try? context.save()
+        }
     }
 }

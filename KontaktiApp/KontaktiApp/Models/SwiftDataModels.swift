@@ -98,3 +98,27 @@ final class DiscussionEntity {
         DiscussionType(rawValue: type) ?? .other
     }
 }
+
+// MARK: - AppleContactLinkEntity
+
+/// Local-only mapping between a Kontakti `Person.id` and an Apple Contacts
+/// `CNContact.identifier`. Drives the "update / create / link" writeback
+/// actions in PersonDetailView.
+///
+/// Why local-only: the same Kontakti person can map to different `CNContact.identifier`
+/// values on different devices (iCloud Contacts assigns per-store identifiers,
+/// and a contact deleted+re-imported has a fresh identifier). Syncing this
+/// mapping through the backend would just cause cross-device confusion. Each
+/// device decides for itself which Apple contact a Person points at.
+@Model
+final class AppleContactLinkEntity {
+    @Attribute(.unique) var personId: String
+    var cnContactIdentifier: String
+    var updatedAt: Date
+
+    init(personId: String, cnContactIdentifier: String, updatedAt: Date = Date()) {
+        self.personId = personId
+        self.cnContactIdentifier = cnContactIdentifier
+        self.updatedAt = updatedAt
+    }
+}

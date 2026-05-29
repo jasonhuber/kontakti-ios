@@ -14,6 +14,7 @@ final class PersistenceController {
             PersonEntity.self,
             CompanyEntity.self,
             DiscussionEntity.self,
+            AppleContactLinkEntity.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -27,7 +28,12 @@ final class PersistenceController {
 
     /// A preview container backed by in-memory storage — useful for SwiftUI previews.
     static var preview: ModelContainer = {
-        let schema = Schema([PersonEntity.self, CompanyEntity.self, DiscussionEntity.self])
+        let schema = Schema([
+            PersonEntity.self,
+            CompanyEntity.self,
+            DiscussionEntity.self,
+            AppleContactLinkEntity.self,
+        ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         return try! ModelContainer(for: schema, configurations: config)
     }()
