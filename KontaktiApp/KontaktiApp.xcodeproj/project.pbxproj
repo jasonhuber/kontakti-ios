@@ -55,6 +55,7 @@
 		97B201F61841F3B19B665DA1 /* GroupImportWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62691CCFFEBC7BF61765341D /* GroupImportWizardView.swift */; };
 		9D49DF3984C003463D3F10AD /* DraftMessageSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769F6B96460DCBCC7B52349 /* DraftMessageSheet.swift */; };
 		9D816D492C53D654E3B51605 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBE6C1340522612BC013AB8 /* SearchViewModel.swift */; };
+		A53103989C93E9AB0092CCF4 /* ReviewContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EFBA68B915448AA8864469 /* ReviewContactsView.swift */; };
 		A5AC9A4B658059203E70CFDF /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9A7DA1C86E121B7ED2E1EF /* SearchView.swift */; };
 		A9FE2EF4A55F09D95C15E0BC /* CompanyDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7463CE498DEF37DDBAAC73 /* CompanyDetailViewModel.swift */; };
 		AA296D41B6E88A1739DD8594 /* TodayEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DEA0F7055599EC624424A1 /* TodayEntry.swift */; };
@@ -181,6 +182,7 @@
 		A71FEFE164EDD31F5AB32C48 /* VoiceRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingView.swift; sourceTree = "<group>"; };
 		B442E486129BC2ACF52FAB6B /* VoiceRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecorder.swift; sourceTree = "<group>"; };
 		B9B5F6CED1BE27F37EFCEAAD /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		B9EFBA68B915448AA8864469 /* ReviewContactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewContactsView.swift; sourceTree = "<group>"; };
 		BBBE6C1340522612BC013AB8 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
 		C0005BBF95E8E779EE249F84 /* CompaniesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompaniesViewModel.swift; sourceTree = "<group>"; };
 		C9BFC6CFAA46A894E8DADE9D /* EnrichmentSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichmentSecrets.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				0C6F5CF630E4C6E9F4190511 /* PersonCardView.swift */,
 				56323189271D5B49AD1E4D5F /* PersonDetailView.swift */,
 				004536DFB2D28320EC9D7AE6 /* PhotoGalleryView.swift */,
+				B9EFBA68B915448AA8864469 /* ReviewContactsView.swift */,
 			);
 			path = People;
 			sourceTree = "<group>";
@@ -661,6 +664,7 @@
 				D33D63220A4D650CC363B936 /* QuizCarousel.swift in Sources */,
 				D0E53354C518EDDB51CD2EF5 /* QuizSessionView.swift in Sources */,
 				CAF992E52B2677EBC9B9D373 /* RegisterView.swift in Sources */,
+				A53103989C93E9AB0092CCF4 /* ReviewContactsView.swift in Sources */,
 				A5AC9A4B658059203E70CFDF /* SearchView.swift in Sources */,
 				9D816D492C53D654E3B51605 /* SearchViewModel.swift in Sources */,
 				7B5E308BA364335A82D4B086 /* SettingsView.swift in Sources */,

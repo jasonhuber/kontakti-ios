@@ -363,6 +363,10 @@ struct Person: Decodable, Identifiable {
     let doNotContact: Bool
     let doNotContactReason: String?
 
+    // Review queue
+    let needsReview: Bool
+    let reviewedAt: Date?
+
     enum CodingKeys: String, CodingKey {
         case id
         case firstName = "first_name"
@@ -408,6 +412,8 @@ struct Person: Decodable, Identifiable {
         case linkedinLastScrapedAt = "linkedin_last_scraped_at"
         case doNotContact = "do_not_contact"
         case doNotContactReason = "do_not_contact_reason"
+        case needsReview = "needs_review"
+        case reviewedAt = "reviewed_at"
     }
 
     init(
@@ -454,7 +460,9 @@ struct Person: Decodable, Identifiable {
         introducedById: String? = nil,
         linkedinLastScrapedAt: Date? = nil,
         doNotContact: Bool = false,
-        doNotContactReason: String? = nil
+        doNotContactReason: String? = nil,
+        needsReview: Bool = false,
+        reviewedAt: Date? = nil
     ) {
         self.id = id
         self.firstName = firstName
@@ -500,6 +508,8 @@ struct Person: Decodable, Identifiable {
         self.linkedinLastScrapedAt = linkedinLastScrapedAt
         self.doNotContact = doNotContact
         self.doNotContactReason = doNotContactReason
+        self.needsReview = needsReview
+        self.reviewedAt = reviewedAt
     }
 
     init(from decoder: Decoder) throws {
@@ -561,6 +571,8 @@ struct Person: Decodable, Identifiable {
         linkedinLastScrapedAt = try? c.decode(Date.self, forKey: .linkedinLastScrapedAt)
         doNotContact = (try? c.decodeIfPresent(Bool.self, forKey: .doNotContact)) ?? false
         doNotContactReason = try? c.decodeIfPresent(String.self, forKey: .doNotContactReason)
+        needsReview = (try? c.decodeIfPresent(Bool.self, forKey: .needsReview)) ?? false
+        reviewedAt = try? c.decodeIfPresent(Date.self, forKey: .reviewedAt)
     }
 }
 
@@ -1435,4 +1447,38 @@ struct PersonRemembrance: Decodable, Identifiable, Hashable {
 
 struct PersonResponse: Decodable {
     let person: Person
+}
+
+// MARK: - People health (Contact Review)
+
+struct PeopleHealth: Decodable {
+    let total: Int
+    let buckets: [String: HealthBucket]
+}
+
+struct HealthBucket: Decodable {
+    let count: Int
+    let samples: [HealthSample]
+}
+
+struct HealthSample: Decodable, Identifiable {
+    let id: String
+    let firstName: String?
+    let lastName: String?
+    let email: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case email
+    }
+
+    var displayName: String {
+        let f = firstName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let l = lastName?.trimmingCharacters(in: .whitespaces) ?? ""
+        let combined = [f, l].filter { !$0.isEmpty }.joined(separator: " ")
+        if !combined.isEmpty { return combined }
+        return email ?? "Unnamed contact"
+    }
 }

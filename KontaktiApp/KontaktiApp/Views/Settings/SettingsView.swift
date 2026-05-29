@@ -89,6 +89,11 @@ struct SettingsView: View {
                         }
                     }
                 }
+                NavigationLink {
+                    ReviewContactsView()
+                } label: {
+                    Label("Review contacts", systemImage: "checkmark.shield")
+                }
             }
 
             // MARK: Notifications

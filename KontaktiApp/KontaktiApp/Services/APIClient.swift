@@ -208,10 +208,24 @@ final class APIClient {
     }
 
     // MARK: - People
-    func listPeople(query: String? = nil, page: Int = 1) async throws -> Paginated<Person> {
+    func listPeople(
+        query: String? = nil,
+        page: Int = 1,
+        needsReview: Bool = false
+    ) async throws -> Paginated<Person> {
         var items: [URLQueryItem] = [URLQueryItem(name: "page", value: "\(page)")]
         if let q = query, !q.isEmpty { items.append(URLQueryItem(name: "q", value: q)) }
+        if needsReview { items.append(URLQueryItem(name: "needs_review", value: "1")) }
         return try await request("people", queryItems: items)
+    }
+
+    func getPeopleHealth() async throws -> PeopleHealth {
+        return try await request("people/health")
+    }
+
+    @discardableResult
+    func markPersonReviewed(id: String) async throws -> Person {
+        return try await request("people/\(id)/review", method: "POST")
     }
 
     func searchPeople(query: String) async throws -> [Person] {
