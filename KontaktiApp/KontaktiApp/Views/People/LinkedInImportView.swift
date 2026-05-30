@@ -14,6 +14,9 @@ struct LinkedInImportView: View {
     @State private var showWebView = false
     @State private var pendingNormalizedURL = ""
 
+    // Step 1c — paste fallback sheet
+    @State private var showPasteView = false
+
     // Step 2 — pre-filled form
     @State private var enrichedResult: EnrichmentResult?
 
@@ -69,6 +72,18 @@ struct LinkedInImportView: View {
                 }
             )
         }
+        .sheet(isPresented: $showPasteView) {
+            LinkedInPasteView(
+                onEnrich: { result in
+                    showPasteView = false
+                    populateForm(from: result)
+                    enrichedResult = result
+                },
+                onCancel: {
+                    showPasteView = false
+                }
+            )
+        }
     }
 
     // MARK: - URL Entry Step
@@ -119,6 +134,24 @@ struct LinkedInImportView: View {
                         indigo.opacity(LinkedInProfileURL.normalized(from: linkedinURL) == nil ? 0.5 : 1)
                     )
                     .foregroundColor(.white)
+                }
+
+                Section {
+                    Button {
+                        showPasteView = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Label("Paste HTML manually", systemImage: "doc.on.clipboard")
+                                .font(.subheadline)
+                            Spacer()
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    .foregroundColor(indigo)
+                } footer: {
+                    Text("Use this if LinkedIn shows a login wall or captcha in the web view.")
+                        .font(.caption)
                 }
             }
             .listStyle(.insetGrouped)

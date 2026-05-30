@@ -39,6 +39,7 @@
 		63A20B8EC6174CA20DBDE16F /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319AD7BB5AFA135692F7C26F /* MainTabView.swift */; };
 		666466DD48E8010E711C30A8 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A8CFE57A72C686EAFA3A4E /* FeedView.swift */; };
 		6792E75950712311507AC712 /* GroupPickRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 321D19F3B88602B1ED561C90 /* GroupPickRow.swift */; };
+		67A895949B4211D74D7009B5 /* LinkedInPasteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D70B4E577A63A372839D559 /* LinkedInPasteView.swift */; };
 		6999951FE6B267A2A4B80033 /* OfflineBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F8C9047FC65FF71F66F702 /* OfflineBanner.swift */; };
 		6DB91357D8DA5B7EBCF7BF77 /* DuplicateReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF333CDD7C9A07553BB7E25 /* DuplicateReviewView.swift */; };
 		70C8F7DCF31B6D99E080AFFB /* DiscussionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CD75380D7D9595D52CDD63 /* DiscussionsViewModel.swift */; };
@@ -152,6 +153,7 @@
 		399291B56FA52AF39FC22AC9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		3A077B7255B71F7D6D54CE52 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		3CF06D9978AB87C74BB23D6F /* LinkedInImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedInImportView.swift; sourceTree = "<group>"; };
+		3D70B4E577A63A372839D559 /* LinkedInPasteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedInPasteView.swift; sourceTree = "<group>"; };
 		3D858B9EA1C907D8964E8C6F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3FF8B00A44AA0650BA485FC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		40718201536A7892C81344B4 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				FF0EDEE6203EC622D9E4E3D7 /* EditPersonView.swift */,
 				266B87E31F87A7B74C1E9F1F /* ImportContactsView.swift */,
 				3CF06D9978AB87C74BB23D6F /* LinkedInImportView.swift */,
+				3D70B4E577A63A372839D559 /* LinkedInPasteView.swift */,
 				12E147B23D0F56165AFF4660 /* LinkSocialPickerView.swift */,
 				CA8099D8BBFEA1E78E5858CC /* PeopleListView.swift */,
 				0C6F5CF630E4C6E9F4190511 /* PersonCardView.swift */,
@@ -651,6 +654,7 @@
 				E8B017B7C2E649A9674B78B2 /* KontaktiShortcutsProvider.swift in Sources */,
 				8ACA9357AB5FC9995BD8D0D9 /* LinkSocialPickerView.swift in Sources */,
 				B570751EA3F1ECEB582D4B59 /* LinkedInImportView.swift in Sources */,
+				67A895949B4211D74D7009B5 /* LinkedInPasteView.swift in Sources */,
 				766633776EC4A0235B2C9CC3 /* LogDiscussionView.swift in Sources */,
 				D0C534E1DD11CC93D0A39945 /* LogVoiceMemoIntent.swift in Sources */,
 				1770B483140A3D614E6C60FE /* LoginView.swift in Sources */,
