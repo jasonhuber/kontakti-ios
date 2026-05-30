@@ -47,6 +47,10 @@ struct EditPersonView: View {
     @State private var region: String
     @State private var country: String
 
+    @State private var contactCadence: String
+    @State private var contactOnBirthday: Bool
+    @State private var contactOnHolidays: Bool
+
     @State private var isSaving = false
     @State private var error: String?
 
@@ -68,6 +72,9 @@ struct EditPersonView: View {
         _city = State(initialValue: person.city ?? "")
         _region = State(initialValue: person.region ?? "")
         _country = State(initialValue: person.country ?? "")
+        _contactCadence = State(initialValue: person.contactCadence ?? "biannual")
+        _contactOnBirthday = State(initialValue: person.contactOnBirthday ?? true)
+        _contactOnHolidays = State(initialValue: person.contactOnHolidays ?? false)
     }
 
     /// Seed editor rows from a Person — merges legacy `email` if it isn't
@@ -198,6 +205,18 @@ struct EditPersonView: View {
                     }
                 }
 
+                Section("Stay in touch") {
+                    Picker("Reach out", selection: $contactCadence) {
+                        Text("Monthly").tag("monthly")
+                        Text("Every 3 months").tag("quarterly")
+                        Text("Twice a year").tag("biannual")
+                        Text("Once a year").tag("annual")
+                        Text("No reminders").tag("none")
+                    }
+                    Toggle("Remind me on their birthday", isOn: $contactOnBirthday)
+                    Toggle("Remind me around the holidays", isOn: $contactOnHolidays)
+                }
+
                 Section("Location") {
                     TextField("City", text: $city)
                     TextField("Region / State", text: $region)
@@ -264,6 +283,9 @@ struct EditPersonView: View {
         patch.city = trimmedOrNil(city)
         patch.region = trimmedOrNil(region)
         patch.country = trimmedOrNil(country)
+        patch.contactCadence = contactCadence
+        patch.contactOnBirthday = contactOnBirthday
+        patch.contactOnHolidays = contactOnHolidays
 
         do {
             let updated = try await api.updatePerson(id: person.id, patch: patch)

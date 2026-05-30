@@ -336,6 +336,9 @@ struct Person: Decodable, Identifiable {
     let relationshipStrength: RelationshipStrength
     let lastContactedAt: Date?
     let nextFollowupAt: Date?
+    let contactCadence: String?
+    let contactOnBirthday: Bool?
+    let contactOnHolidays: Bool?
     let notes: String?
     let deviceNote: String?
     let tags: [Tag]
@@ -390,6 +393,9 @@ struct Person: Decodable, Identifiable {
         case relationshipStrength = "relationship_strength"
         case lastContactedAt = "last_contacted_at"
         case nextFollowupAt = "next_followup_at"
+        case contactCadence = "contact_cadence"
+        case contactOnBirthday = "contact_on_birthday"
+        case contactOnHolidays = "contact_on_holidays"
         case notes
         case deviceNote = "device_note"
         case tags
@@ -439,6 +445,9 @@ struct Person: Decodable, Identifiable {
         relationshipStrength: RelationshipStrength = .cold,
         lastContactedAt: Date? = nil,
         nextFollowupAt: Date? = nil,
+        contactCadence: String? = nil,
+        contactOnBirthday: Bool? = nil,
+        contactOnHolidays: Bool? = nil,
         notes: String? = nil,
         deviceNote: String? = nil,
         tags: [Tag] = [],
@@ -486,6 +495,9 @@ struct Person: Decodable, Identifiable {
         self.relationshipStrength = relationshipStrength
         self.lastContactedAt = lastContactedAt
         self.nextFollowupAt = nextFollowupAt
+        self.contactCadence = contactCadence
+        self.contactOnBirthday = contactOnBirthday
+        self.contactOnHolidays = contactOnHolidays
         self.notes = notes
         self.deviceNote = deviceNote
         self.tags = tags
@@ -548,6 +560,9 @@ struct Person: Decodable, Identifiable {
         relationshipStrength = (try? c.decode(RelationshipStrength.self, forKey: .relationshipStrength)) ?? .cold
         lastContactedAt = try? c.decode(Date.self, forKey: .lastContactedAt)
         nextFollowupAt = try? c.decode(Date.self, forKey: .nextFollowupAt)
+        contactCadence = try? c.decode(String.self, forKey: .contactCadence)
+        contactOnBirthday = try? c.decodeIfPresent(Bool.self, forKey: .contactOnBirthday)
+        contactOnHolidays = try? c.decodeIfPresent(Bool.self, forKey: .contactOnHolidays)
         notes = try? c.decode(String.self, forKey: .notes)
         deviceNote = try? c.decode(String.self, forKey: .deviceNote)
         tags = (try? c.decode([Tag].self, forKey: .tags)) ?? []
@@ -946,6 +961,9 @@ struct PersonPatch: Encodable {
     var relationshipStrength: String?
     var nextFollowupAt: String?        // ISO 8601 or "" to clear
     var lastContactedAt: String?
+    var contactCadence: String?
+    var contactOnBirthday: Bool?
+    var contactOnHolidays: Bool?
     var notes: String?
     var deviceNote: String?
     var tagIds: [String]?
@@ -988,6 +1006,9 @@ struct PersonPatch: Encodable {
         case relationshipStrength = "relationship_strength"
         case nextFollowupAt = "next_followup_at"
         case lastContactedAt = "last_contacted_at"
+        case contactCadence = "contact_cadence"
+        case contactOnBirthday = "contact_on_birthday"
+        case contactOnHolidays = "contact_on_holidays"
         case notes
         case deviceNote = "device_note"
         case tagIds = "tag_ids"
@@ -1026,6 +1047,9 @@ struct PersonPatch: Encodable {
         try c.encodeIfPresent(relationshipStrength, forKey: .relationshipStrength)
         try c.encodeIfPresent(nextFollowupAt, forKey: .nextFollowupAt)
         try c.encodeIfPresent(lastContactedAt, forKey: .lastContactedAt)
+        try c.encodeIfPresent(contactCadence, forKey: .contactCadence)
+        try c.encodeIfPresent(contactOnBirthday, forKey: .contactOnBirthday)
+        try c.encodeIfPresent(contactOnHolidays, forKey: .contactOnHolidays)
         try c.encodeIfPresent(notes, forKey: .notes)
         try c.encodeIfPresent(deviceNote, forKey: .deviceNote)
         try c.encodeIfPresent(tagIds, forKey: .tagIds)
