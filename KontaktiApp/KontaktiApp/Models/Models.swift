@@ -366,6 +366,9 @@ struct Person: Decodable, Identifiable {
     let doNotContact: Bool
     let doNotContactReason: String?
 
+    // Preferred contact method (e.g. "facebook" when that's the only way to reach them)
+    let preferredContactVia: String?
+
     // Review queue
     let needsReview: Bool
     let reviewedAt: Date?
@@ -418,6 +421,7 @@ struct Person: Decodable, Identifiable {
         case linkedinLastScrapedAt = "linkedin_last_scraped_at"
         case doNotContact = "do_not_contact"
         case doNotContactReason = "do_not_contact_reason"
+        case preferredContactVia = "preferred_contact_via"
         case needsReview = "needs_review"
         case reviewedAt = "reviewed_at"
     }
@@ -470,6 +474,7 @@ struct Person: Decodable, Identifiable {
         linkedinLastScrapedAt: Date? = nil,
         doNotContact: Bool = false,
         doNotContactReason: String? = nil,
+        preferredContactVia: String? = nil,
         needsReview: Bool = false,
         reviewedAt: Date? = nil
     ) {
@@ -520,6 +525,7 @@ struct Person: Decodable, Identifiable {
         self.linkedinLastScrapedAt = linkedinLastScrapedAt
         self.doNotContact = doNotContact
         self.doNotContactReason = doNotContactReason
+        self.preferredContactVia = preferredContactVia
         self.needsReview = needsReview
         self.reviewedAt = reviewedAt
     }
@@ -586,6 +592,7 @@ struct Person: Decodable, Identifiable {
         linkedinLastScrapedAt = try? c.decode(Date.self, forKey: .linkedinLastScrapedAt)
         doNotContact = (try? c.decodeIfPresent(Bool.self, forKey: .doNotContact)) ?? false
         doNotContactReason = try? c.decodeIfPresent(String.self, forKey: .doNotContactReason)
+        preferredContactVia = try? c.decode(String.self, forKey: .preferredContactVia)
         needsReview = (try? c.decodeIfPresent(Bool.self, forKey: .needsReview)) ?? false
         reviewedAt = try? c.decodeIfPresent(Date.self, forKey: .reviewedAt)
     }
@@ -985,6 +992,9 @@ struct PersonPatch: Encodable {
     var doNotContact: Bool?
     var doNotContactReason: String?
 
+    // Preferred contact method — set to "facebook" (or nil to clear)
+    var preferredContactVia: String?
+
     init() {}
 
     enum CodingKeys: String, CodingKey {
@@ -1025,6 +1035,7 @@ struct PersonPatch: Encodable {
         case introducedById = "introduced_by_id"
         case doNotContact = "do_not_contact"
         case doNotContactReason = "do_not_contact_reason"
+        case preferredContactVia = "preferred_contact_via"
     }
 
     func encode(to encoder: Encoder) throws {
@@ -1066,6 +1077,7 @@ struct PersonPatch: Encodable {
         try c.encodeIfPresent(introducedById, forKey: .introducedById)
         try c.encodeIfPresent(doNotContact, forKey: .doNotContact)
         try c.encodeIfPresent(doNotContactReason, forKey: .doNotContactReason)
+        try c.encodeIfPresent(preferredContactVia, forKey: .preferredContactVia)
     }
 }
 

@@ -35,6 +35,7 @@ struct EditPersonView: View {
     @State private var twitterXHandle: String
     @State private var tiktokHandle: String
     @State private var whatsappPhone: String
+    @State private var facebookPrimary: Bool
 
     @State private var previousEmployers: [String]
     @State private var howWeMet: String
@@ -64,6 +65,7 @@ struct EditPersonView: View {
         _phones = State(initialValue: Self.seedPhones(person))
         _instagramHandle = State(initialValue: person.instagramHandle ?? "")
         _facebookUrl = State(initialValue: person.facebookUrl ?? "")
+        _facebookPrimary = State(initialValue: person.preferredContactVia == "facebook")
         _twitterXHandle = State(initialValue: person.twitterXHandle ?? "")
         _tiktokHandle = State(initialValue: person.tiktokHandle ?? "")
         _whatsappPhone = State(initialValue: person.whatsappPhone ?? "")
@@ -150,6 +152,18 @@ struct EditPersonView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                    if !facebookUrl.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Toggle(isOn: $facebookPrimary) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Facebook is the only way to reach them")
+                                    .font(.subheadline)
+                                Text("Shows a prominent banner on their profile")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .tint(Color(red: 0.26, green: 0.40, blue: 0.70))
+                    }
                     HStack {
                         Text("@").foregroundColor(.secondary)
                         TextField("twitter / x handle", text: $twitterXHandle)
@@ -272,6 +286,9 @@ struct EditPersonView: View {
         patch.phones = cleanPhones.map { PersonPhonePatch(value: $0.value, label: $0.label, isPrimary: $0.isPrimary) }
         patch.instagramHandle = trimmedOrNil(instagramHandle.replacingOccurrences(of: "@", with: ""))
         patch.facebookUrl = trimmedOrNil(facebookUrl)
+        // Only set preferred_contact_via when facebook URL is actually present
+        let hasFb = !(facebookUrl.trimmingCharacters(in: .whitespaces).isEmpty)
+        patch.preferredContactVia = (hasFb && facebookPrimary) ? "facebook" : nil
         patch.twitterXHandle = trimmedOrNil(twitterXHandle.replacingOccurrences(of: "@", with: ""))
         patch.tiktokHandle = trimmedOrNil(tiktokHandle.replacingOccurrences(of: "@", with: ""))
         patch.whatsappPhone = trimmedOrNil(whatsappPhone)

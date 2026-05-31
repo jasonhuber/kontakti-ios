@@ -18,13 +18,17 @@ final class CompaniesViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Flush the sync queue whenever connectivity is restored
         networkMonitor.$isConnected
             .removeDuplicates()
             .filter { $0 }
             .sink { _ in
                 Task { await SyncQueue.shared.flush() }
             }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .kontaktiDidBecomeActive)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
             .store(in: &cancellables)
     }
 

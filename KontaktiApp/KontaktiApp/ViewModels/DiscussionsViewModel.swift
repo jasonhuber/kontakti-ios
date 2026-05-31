@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class DiscussionsViewModel: ObservableObject {
@@ -16,6 +17,14 @@ final class DiscussionsViewModel: ObservableObject {
     private let store = OfflineStore.shared
     private let networkMonitor = NetworkMonitor.shared
     private var searchTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        NotificationCenter.default.publisher(for: .kontaktiDidBecomeActive)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
+            .store(in: &cancellables)
+    }
 
     func load(reset: Bool = false) async {
         if reset {

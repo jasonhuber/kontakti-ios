@@ -223,4 +223,7 @@ extension Notification.Name {
     /// Posted when a push notification (or other signal) implies that the
     /// Today inbox payload changed and the widget snapshot should refresh.
     static let kontaktiTodayShouldRefresh    = Notification.Name("kontakti.todayShouldRefresh")
+    /// Posted when the app transitions to the active scene phase.
+    /// List ViewModels subscribe to trigger a foreground refresh.
+    static let kontaktiDidBecomeActive       = Notification.Name("kontakti.didBecomeActive")
 }

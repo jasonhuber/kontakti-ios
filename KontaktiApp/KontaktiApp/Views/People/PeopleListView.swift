@@ -12,8 +12,25 @@ struct PeopleListView: View {
     private let strengthFilters: [RelationshipStrength?] = [nil, .close, .hot, .warm, .cold]
 
     private var filteredPeople: [Person] {
-        guard let filter = selectedStrength else { return vm.people }
-        return vm.people.filter { $0.relationshipStrength == filter }
+        var people = vm.people
+        // Instant local search — mirrors Android Room DB LIKE query.
+        // Kicks in at 2+ chars so single-letter typos don't over-filter.
+        if vm.searchText.count >= 2 {
+            let q = vm.searchText.lowercased()
+            people = people.filter { p in
+                p.fullName.lowercased().contains(q) ||
+                (p.nickname?.lowercased().contains(q) ?? false) ||
+                (p.email?.lowercased().contains(q) ?? false) ||
+                p.emails.contains(where: { $0.value.lowercased().contains(q) }) ||
+                (p.company?.name.lowercased().contains(q) ?? false) ||
+                (p.title?.lowercased().contains(q) ?? false)
+            }
+        }
+        // Relationship strength filter
+        if let filter = selectedStrength {
+            people = people.filter { $0.relationshipStrength == filter }
+        }
+        return people
     }
 
     var body: some View {

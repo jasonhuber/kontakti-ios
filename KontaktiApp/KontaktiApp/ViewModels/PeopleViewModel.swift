@@ -28,13 +28,17 @@ final class PeopleViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Flush the sync queue whenever connectivity is restored
         networkMonitor.$isConnected
             .removeDuplicates()
             .filter { $0 }
             .sink { _ in
                 Task { await SyncQueue.shared.flush() }
             }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .kontaktiDidBecomeActive)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
             .store(in: &cancellables)
     }
 
@@ -121,6 +125,14 @@ final class PeopleViewModel: ObservableObject {
 
     func onSearchChange() {
         searchTask?.cancel()
+
+        // When the query is cleared (or too short to be meaningful) cancel any
+        // pending network search and let the local filteredPeople show everything
+        // from the already-loaded list — instant, no network round-trip needed.
+        guard searchText.count >= 2 else { return }
+
+        // For longer queries fire a background API call after a short debounce
+        // so the server can surface contacts not yet paged into vm.people.
         searchTask = Task {
             try? await Task.sleep(nanoseconds: 300_000_000)
             guard !Task.isCancelled else { return }

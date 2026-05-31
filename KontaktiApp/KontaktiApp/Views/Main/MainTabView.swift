@@ -148,6 +148,7 @@ struct MainTabView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Task { await todayVM.load() }
+                NotificationCenter.default.post(name: .kontaktiDidBecomeActive, object: nil)
             }
         }
     }

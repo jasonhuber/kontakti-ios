@@ -97,7 +97,40 @@ struct PersonDetailView: View {
 
                 // Social handle chips
                 socialChips
+                    .padding(.bottom, displayPerson.preferredContactVia == "facebook" ? 8 : 16)
+
+                // Facebook-only banner — shown when user marked FB as the only contact method
+                if displayPerson.preferredContactVia == "facebook",
+                   let fbUrl = displayPerson.facebookUrl,
+                   let url = URL(string: fbUrl) {
+                    Button {
+                        UIApplication.shared.open(url)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "f.cursive.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Facebook is the only way to reach \(displayPerson.firstName)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                Text("Tap to open their profile")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.85))
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                        .padding(14)
+                        .background(Color(red: 0.23, green: 0.35, blue: 0.60))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 16)
+                }
 
                 // Follow-up
                 if let followup = displayPerson.nextFollowupAt {
@@ -238,20 +271,51 @@ struct PersonDetailView: View {
                     .padding(.bottom, 16)
                 }
 
-                // Notes
-                if let notes = displayPerson.notes, !notes.isEmpty {
+                // Notes — vm.notes holds Note records (quiz, voice, manual);
+                // displayPerson.notes is the legacy plain-text column. Both are shown here.
+                // Previously vm.notes was loaded but never rendered — quiz notes were
+                // invisible to the user even though they were saved correctly.
+                let legacyNote = (displayPerson.notes ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                if !vm.notes.isEmpty || !legacyNote.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Notes")
                             .font(.footnote)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 16)
-                        GroupBox {
-                            Text(notes)
-                                .font(.body)
-                                .foregroundColor(.primary)
+                        VStack(spacing: 0) {
+                            ForEach(vm.notes) { note in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(note.body)
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                    Text(note.createdAt.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        Task { await vm.deleteNote(note) }
+                                    } label: {
+                                        Label("Delete note", systemImage: "trash")
+                                    }
+                                }
+                                if note.id != vm.notes.last?.id || !legacyNote.isEmpty {
+                                    Divider().padding(.leading, 12)
+                                }
+                            }
+                            if !legacyNote.isEmpty {
+                                Text(legacyNote)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                            }
                         }
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal, 16)
                     }
                     .padding(.bottom, 24)
@@ -668,15 +732,19 @@ struct DoNotContactPanel: View {
                         .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
+                    // iOS 18: vertical-axis TextFields can render typed text in
+                    // non-adaptive black, which would disappear against the
+                    // previous `systemBackground` fill in dark mode.
                     TextField(
                         "e.g. asked to be removed, deceased, ex-spouse, harassment, GDPR request",
                         text: $reason,
                         axis: .vertical
                     )
                     .font(.subheadline)
+                    .foregroundColor(.primary)
                     .lineLimit(2...4)
                     .padding(8)
-                    .background(Color(.systemBackground))
+                    .background(Color(.tertiarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)

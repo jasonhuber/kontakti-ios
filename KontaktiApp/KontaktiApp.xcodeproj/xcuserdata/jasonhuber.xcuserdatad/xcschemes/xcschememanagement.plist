@@ -4,15 +4,38 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>KontaktiApp.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>KontaktiShare.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>0</integer>
 		</dict>
 		<key>KontaktiWidget.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>1DC0E21BD7A491BADA3EB2D4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8B81F474F6E5AFC24061A98F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C893B4801BA1B9A12C07C20E</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
