@@ -43,20 +43,23 @@ final class TodayViewModel: ObservableObject {
     }
 
     func skip(_ item: TodayItem) async {
-        // Optimistic remove
+        // Optimistic remove first so the UI responds instantly.
         items.removeAll { $0.id == item.id }
         writeWidgetSnapshot()
-        // For social-signal / job-change items the key matches an activity id; ack it.
         if item.kind == .socialSignal || item.kind == .jobChange {
             _ = try? await api.acknowledgeActivity(id: item.id)
+        } else {
+            // All other kinds (cadence, follow-up, birthday, etc.) go through
+            // the standard skip endpoint so the server marks them done.
+            _ = try? await api.skipTodayItem(itemKey: item.id)
         }
     }
 
     func snooze(_ item: TodayItem) async {
-        // Optimistic remove. Backend snooze isn't a dedicated endpoint per the contract,
-        // so for now we just acknowledge / hide locally.
+        // Optimistic remove first so the UI responds instantly.
         items.removeAll { $0.id == item.id }
         writeWidgetSnapshot()
+        _ = try? await api.snoozeTodayItem(itemKey: item.id)
     }
 
     @discardableResult

@@ -40,6 +40,12 @@ final class PeopleViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
             .store(in: &cancellables)
+
+        // Reload after a voice capture is committed — it may have created people.
+        NotificationCenter.default.publisher(for: .kontaktiVoiceCaptureCommitted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
+            .store(in: &cancellables)
     }
 
     // MARK: - Load

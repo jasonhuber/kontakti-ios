@@ -89,7 +89,7 @@ struct DiscussionsListView: View {
             DiscussionDetailView(discussion: discussion)
         }
         .refreshable {
-            await vm.load()
+            await vm.load(reset: true)
         }
     }
 }

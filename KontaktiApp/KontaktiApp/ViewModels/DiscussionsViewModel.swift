@@ -24,6 +24,12 @@ final class DiscussionsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
             .store(in: &cancellables)
+
+        // Reload after a voice capture — it typically creates discussions.
+        NotificationCenter.default.publisher(for: .kontaktiVoiceCaptureCommitted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in Task { [weak self] in await self?.load(reset: true) } }
+            .store(in: &cancellables)
     }
 
     func load(reset: Bool = false) async {

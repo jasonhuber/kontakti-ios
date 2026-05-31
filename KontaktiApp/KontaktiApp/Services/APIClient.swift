@@ -614,6 +614,14 @@ final class APIClient {
         return res.draft
     }
 
+    func skipTodayItem(itemKey: String) async throws {
+        try await requestVoid("today/items/\(itemKey)/skip", method: "POST")
+    }
+
+    func snoozeTodayItem(itemKey: String) async throws {
+        try await requestVoid("today/items/\(itemKey)/snooze", method: "POST")
+    }
+
     struct LogReachOutBody: Encodable {
         let via: String
         let note: String?
