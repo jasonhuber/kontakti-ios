@@ -67,14 +67,24 @@ struct QuizCard: View {
             // Optional free-text note — saved as a real Note on the person so
             // the AI can use it later to decide how/why to reach out. Rides
             // along with whichever answer (chip or custom) the user picks.
+            // Note: `.textFieldStyle(.roundedBorder)` silently breaks when
+            // combined with `axis: .vertical` on iOS 18 — typed text renders
+            // black-on-black in dark mode. Style the field manually instead.
             TextField(
                 "Add a note (optional) — how you know them, anything to remember…",
                 text: $note,
                 axis: .vertical
             )
-            .textFieldStyle(.roundedBorder)
             .font(.footnote)
+            .foregroundColor(.primary)
             .lineLimit(1...4)
+            .padding(8)
+            .background(Color(.tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color(.separator), lineWidth: 0.5)
+            )
 
             // Footer actions
             HStack(spacing: 12) {
@@ -125,8 +135,15 @@ struct QuizCard: View {
                 text: $freeText,
                 axis: .vertical
             )
-            .textFieldStyle(.roundedBorder)
+            .foregroundColor(.primary)
             .lineLimit(1...3)
+            .padding(8)
+            .background(Color(.tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color(.separator), lineWidth: 0.5)
+            )
             Button {
                 let trimmed = freeText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else { return }

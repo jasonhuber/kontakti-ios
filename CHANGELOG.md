@@ -4,6 +4,24 @@ Notable changes to the SwiftUI iOS app. Most recent at top.
 
 ---
 
+## 2026-05-31
+
+### QuizCard dark mode fix
+
+`TextField(text:, axis: .vertical)` combined with `.textFieldStyle(.roundedBorder)` silently breaks in iOS 18: typed text renders black-on-black in dark mode. Replaced both fields in `QuizCard.swift` (the "Add a note" field and the `freeTextEntry` for `.notable`/Other) with manual styling — `Color(.tertiarySystemGroupedBackground)` background, `Color(.separator)` border, explicit `.foregroundColor(.primary)` so typed text adapts.
+
+### Dark mode sweep for remaining vertical-axis TextFields
+
+Audited the rest of the app for the same bug class. One more vertical-axis `TextField` was vulnerable to non-adaptive black text:
+
+- `VoiceResultReviewView.swift` — the per-discussion "Summary" field (inside the voice-result review `Form`) was bare with no explicit background or foreground. Now styled with `Color(.tertiarySystemGroupedBackground)`, `Color(.separator)` border, and `.foregroundColor(.primary)`.
+
+(The Do-Not-Contact "Reason" field in `PersonDetailView.swift` has the same bug-class defense applied locally but is bundled into a separate uncommitted feature branch — it'll ship with that work.)
+
+Spot-checked all other `Color.white`/`Color.black` usages, fixed RGB literals (the indigo brand color, etc.), and `Color(.systemBackground)` overlays — the remaining ones sit on fixed-color backgrounds (indigo buttons, Facebook brand banner, red error banner, QR-code white plate, toast dim) or are full-screen opaque covers, so they're intentional and adapt correctly.
+
+---
+
 ## 2026-05-29
 
 ### Apple Contacts writeback

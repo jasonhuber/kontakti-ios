@@ -60,8 +60,19 @@ struct VoiceResultReviewView: View {
                                     .foregroundColor(.secondary)
                                 Spacer()
                             }
+                            // iOS 18: vertical-axis TextFields can render typed
+                            // text in non-adaptive black. Force adaptive primary
+                            // and give it a tertiary background for contrast.
                             TextField("Summary", text: $d.summary, axis: .vertical)
                                 .font(.body)
+                                .foregroundColor(.primary)
+                                .padding(8)
+                                .background(Color(.tertiarySystemGroupedBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color(.separator), lineWidth: 0.5)
+                                )
                             if !d.participantNames.isEmpty {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 6) {
