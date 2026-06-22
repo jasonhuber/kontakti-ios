@@ -634,6 +634,37 @@ final class APIClient {
         return res.lastContactedAt
     }
 
+    struct LogContactDirectResponse: Decodable {
+        let lastContactedAt: Date?
+        enum CodingKeys: String, CodingKey {
+            case lastContactedAt = "last_contacted_at"
+        }
+    }
+
+    /// Quick-log a direct outreach for a person without a Today queue item.
+    @discardableResult
+    func logContactDirect(personId: String, via: String, note: String? = nil) async throws -> Date? {
+        let body = LogReachOutBody(via: via, note: note)
+        let res: LogContactDirectResponse = try await request("people/\(personId)/log-contact", method: "POST", body: body)
+        return res.lastContactedAt
+    }
+
+    // MARK: - Contact schedule suggestions
+
+    func loadSuggestions(limit: Int = 6) async throws -> ReachOutSuggestionsResponse {
+        let queryItems = [URLQueryItem(name: "limit", value: "\(limit)")]
+        return try await request("contact-schedule/suggestions", queryItems: queryItems)
+    }
+
+    func completeSuggestion(scheduleId: Int) async throws {
+        try await requestVoid("contact-schedule/\(scheduleId)/complete", method: "POST")
+    }
+
+    func snoozeSuggestion(scheduleId: Int, days: Int = 30) async throws {
+        struct Body: Encodable { let days: Int }
+        try await requestVoid("contact-schedule/\(scheduleId)/snooze", method: "POST", body: Body(days: days))
+    }
+
     // MARK: - Social Groups
 
     func listSocialGroups() async throws -> [SocialGroup] {

@@ -13,6 +13,7 @@ struct QuizSessionView: View {
     @State private var queue: [ContactPrompt] = []
     @State private var index: Int = 0
     @State private var answered: Set<String> = []
+    @State private var refreshing: Bool = false
 
     private let indigo = Color(red: 0.31, green: 0.27, blue: 0.90)
 
@@ -60,6 +61,28 @@ struct QuizSessionView: View {
             .navigationTitle("Daily quiz")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Task {
+                            refreshing = true
+                            await vm.load()
+                            // Append any prompts not already in our local queue
+                            let existingIds = Set(queue.map(\.id))
+                            let fresh = vm.quiz.filter { !existingIds.contains($0.id) }
+                            if !fresh.isEmpty {
+                                queue.append(contentsOf: fresh)
+                            }
+                            refreshing = false
+                        }
+                    } label: {
+                        if refreshing {
+                            ProgressView().scaleEffect(0.75)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
+                    .disabled(refreshing)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }

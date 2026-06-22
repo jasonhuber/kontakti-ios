@@ -51,6 +51,7 @@
 		7B5E308BA364335A82D4B086 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D858B9EA1C907D8964E8C6F /* SettingsView.swift */; };
 		7B963BF2E43EB61C35997455 /* VoiceRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442E486129BC2ACF52FAB6B /* VoiceRecorder.swift */; };
 		8281EA717CE9729316FC31D9 /* DNCBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD90B91A7272392D82BF6EE /* DNCBadge.swift */; };
+		A1B2C3D4E5F60001A1B2C3D4 /* QuickLogBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60002A1B2C3D4 /* QuickLogBarView.swift */; };
 		8671280603FF3D4898927727 /* ImportContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 266B87E31F87A7B74C1E9F1F /* ImportContactsView.swift */; };
 		8ACA9357AB5FC9995BD8D0D9 /* LinkSocialPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E147B23D0F56165AFF4660 /* LinkSocialPickerView.swift */; };
 		8DF397C2C6AC6797F741AFF0 /* AppleContactsWritebackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C79E3202B5D0E972DF79FCD /* AppleContactsWritebackView.swift */; };
@@ -201,6 +202,7 @@
 		E769F6B96460DCBCC7B52349 /* DraftMessageSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftMessageSheet.swift; sourceTree = "<group>"; };
 		E86A284D120E83F46C3C486B /* KontaktiApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KontaktiApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBD90B91A7272392D82BF6EE /* DNCBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNCBadge.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60002A1B2C3D4 /* QuickLogBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLogBarView.swift; sourceTree = "<group>"; };
 		EBF14E7372E966CAA6C9EDF0 /* DiscussionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscussionDetailView.swift; sourceTree = "<group>"; };
 		EC7F41471D13D7E6397F0865 /* KontaktiWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = KontaktiWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED9C80D5A98D87FD03719732 /* ContactsImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsImporter.swift; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 			children = (
 				18F13EBF1DE9B37A92130DB6 /* AvatarView.swift */,
 				EBD90B91A7272392D82BF6EE /* DNCBadge.swift */,
+				A1B2C3D4E5F60002A1B2C3D4 /* QuickLogBarView.swift */,
 				87F9A7EFA1DFFCC67314C2FE /* EmptyStateView.swift */,
 				51F8C9047FC65FF71F66F702 /* OfflineBanner.swift */,
 				7EDC76B4B27D767D164581C9 /* StrengthBadgeView.swift */,
@@ -630,6 +633,7 @@
 				4F79D8CC5A2C6C60DEACF934 /* ContactsImporter.swift in Sources */,
 				D3BDED82AB3F3403BCD3B0CB /* ContentView.swift in Sources */,
 				8281EA717CE9729316FC31D9 /* DNCBadge.swift in Sources */,
+				A1B2C3D4E5F60001A1B2C3D4 /* QuickLogBarView.swift in Sources */,
 				BBDDCC595B7F97D43E7FEC4D /* DeepLinkRouter.swift in Sources */,
 				2AD4746ED169C87D9BAD9628 /* DiscussionDetailView.swift in Sources */,
 				BF54CBB7AF505184F55A0BC1 /* DiscussionsListView.swift in Sources */,

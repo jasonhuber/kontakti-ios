@@ -139,12 +139,22 @@ final class OfflineStore {
         try? context.save()
     }
 
-    // MARK: - Known emails (for deduplication)
+    // MARK: - Known emails / phones (for deduplication)
 
     /// Returns the set of all cached email addresses (lowercased).
     func cachedEmails() -> Set<String> {
         let people = fetchPeople()
         return Set(people.compactMap { $0.email?.lowercased() })
+    }
+
+    /// Returns the set of all cached phone numbers, normalized to digits only.
+    func cachedPhones() -> Set<String> {
+        let people = fetchPeople()
+        return Set(people.compactMap { entity -> String? in
+            guard let phone = entity.phone else { return nil }
+            let digits = phone.filter(\.isNumber)
+            return digits.isEmpty ? nil : digits
+        })
     }
 
     // MARK: - Apple Contacts link mapping

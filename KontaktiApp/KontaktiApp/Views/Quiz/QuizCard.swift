@@ -86,6 +86,22 @@ struct QuizCard: View {
                     .stroke(Color(.separator), lineWidth: 0.5)
             )
 
+            // Save note — full-width button, only shown once the user types something
+            if let n = trimmedNote {
+                Button {
+                    onAnswer(n, nil)
+                } label: {
+                    Text("Save note →")
+                        .font(.footnote.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(indigo)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+            }
+
             // Footer actions
             HStack(spacing: 12) {
                 Button("Skip") { onSkip(false) }

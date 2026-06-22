@@ -6,6 +6,7 @@ final class TodayViewModel: ObservableObject {
     @Published var items: [TodayItem] = []
     @Published var quiz: [ContactPrompt] = []
     @Published var rhythmInsights: [RhythmInsight] = []
+    @Published var suggestions: [ReachOutSuggestion] = []
     @Published var isLoading = false
     @Published var isRefreshing = false
     @Published var errorMessage: String?
@@ -22,10 +23,14 @@ final class TodayViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            let bundle = try await api.loadTodayWithQuiz(limit: 25)
+            async let bundleTask = api.loadTodayWithQuiz(limit: 25)
+            async let suggestionsTask = api.loadSuggestions(limit: 6)
+            let bundle = try await bundleTask
+            let suggestionsResponse = (try? await suggestionsTask) ?? ReachOutSuggestionsResponse(count: 0, suggestions: [])
             items = bundle.items.sorted { $0.priority > $1.priority }
             quiz = bundle.quiz
             rhythmInsights = bundle.rhythmInsights
+            suggestions = suggestionsResponse.suggestions
             answeredThisSession = 0
             writeWidgetSnapshot()
         } catch {
@@ -99,6 +104,34 @@ final class TodayViewModel: ObservableObject {
             return .success(try await api.draftMessage(itemKey: item.id))
         } catch {
             return .failure(error)
+        }
+    }
+
+    // MARK: - Suggestions
+
+    func completeSuggestion(_ suggestion: ReachOutSuggestion) async {
+        suggestions.removeAll { $0.scheduleId == suggestion.scheduleId }
+        _ = try? await api.completeSuggestion(scheduleId: suggestion.scheduleId)
+    }
+
+    func snoozeSuggestion(_ suggestion: ReachOutSuggestion) async {
+        suggestions.removeAll { $0.scheduleId == suggestion.scheduleId }
+        _ = try? await api.snoozeSuggestion(scheduleId: suggestion.scheduleId, days: 30)
+    }
+
+    /// Record how the user reached out to a suggested person (channel + optional
+    /// note). The /log-contact endpoint also marks the schedule item done server-
+    /// side, so on success we just drop it from the list.
+    @discardableResult
+    func logReachOut(suggestion: ReachOutSuggestion, via: String, note: String?) async -> Bool {
+        do {
+            _ = try await api.logContactDirect(personId: suggestion.personId, via: via, note: note)
+            suggestions.removeAll { $0.scheduleId == suggestion.scheduleId }
+            toast = "Logged reach-out to \(suggestion.personFirstName ?? suggestion.name)"
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
         }
     }
 

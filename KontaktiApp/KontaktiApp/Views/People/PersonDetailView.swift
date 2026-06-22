@@ -154,6 +154,10 @@ struct PersonDetailView: View {
                     .padding(.bottom, 16)
                 }
 
+                // Quick-log: one-tap reach-out logging
+                QuickLogBarView(personId: displayPerson.id)
+                    .padding(.bottom, 16)
+
                 // Do not contact
                 DoNotContactPanel(person: displayPerson, vm: vm)
                     .padding(.horizontal, 16)

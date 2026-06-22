@@ -1425,6 +1425,55 @@ struct RhythmInsight: Decodable, Identifiable, Hashable {
 /// New combined shape of `GET /api/v1/today`. The legacy bare-array shape
 /// is still tolerated by `APIClient.listToday()` for backward compatibility,
 /// but new code should call `loadTodayWithQuiz()`.
+// MARK: - Reach-out suggestions (contact schedule)
+
+struct ReachOutSuggestion: Decodable, Identifiable, Hashable {
+    let scheduleId: Int
+    let personId: String
+    let name: String
+    let reason: String
+    let label: String?
+    let dueAt: String
+    let company: String?
+    let channelHint: String
+    let lastContact: String
+    let daysSince: Int?
+    let overdueDays: Int?
+    let why: String?
+    let personFirstName: String?
+    let personEmail: String?
+    let personPhone: String?
+    let personWhatsapp: String?
+    let personInstagram: String?
+    let personFacebook: String?
+
+    var id: Int { scheduleId }
+
+    enum CodingKeys: String, CodingKey {
+        case scheduleId   = "schedule_id"
+        case personId     = "person_id"
+        case name, reason, label
+        case dueAt        = "due_at"
+        case company
+        case channelHint  = "channel_hint"
+        case lastContact  = "last_contact"
+        case daysSince    = "days_since"
+        case overdueDays  = "overdue_days"
+        case why
+        case personFirstName = "person_first_name"
+        case personEmail     = "person_email"
+        case personPhone     = "person_phone"
+        case personWhatsapp  = "person_whatsapp"
+        case personInstagram = "person_instagram"
+        case personFacebook  = "person_facebook"
+    }
+}
+
+struct ReachOutSuggestionsResponse: Decodable {
+    let count: Int
+    let suggestions: [ReachOutSuggestion]
+}
+
 struct TodayResponse: Decodable {
     let items: [TodayItem]
     let count: Int

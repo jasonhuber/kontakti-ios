@@ -117,10 +117,8 @@ final class ContactsImporter: ObservableObject {
         try await requestAccess()
         let all = try fetchAllDeviceContacts()
         let existingEmails = OfflineStore.shared.cachedEmails()
-        return all.filter { candidate in
-            guard let email = candidate.email?.lowercased() else { return true }
-            return !existingEmails.contains(email)
-        }
+        let existingPhones = OfflineStore.shared.cachedPhones()
+        return all.filter { !Self.matchesExisting($0, emails: existingEmails, phones: existingPhones) }
     }
 
     // MARK: - Public: orchestrated run
@@ -176,10 +174,8 @@ final class ContactsImporter: ObservableObject {
         try await requestAccess()
         let raw = try fetchAllDeviceContacts()
         let existingEmails = OfflineStore.shared.cachedEmails()
-        let filtered = raw.filter { c in
-            guard let e = c.email?.lowercased() else { return true }
-            return !existingEmails.contains(e)
-        }
+        let existingPhones = OfflineStore.shared.cachedPhones()
+        let filtered = raw.filter { !Self.matchesExisting($0, emails: existingEmails, phones: existingPhones) }
         let tagged = filtered.map { $0.withSource("device") }
         return try await postBatch(tagged, googleAccountId: nil, sourceLabel: "device")
     }
@@ -269,6 +265,23 @@ final class ContactsImporter: ObservableObject {
         if result.unresolvedDuplicates > 0 {
             hasUnreviewedDuplicates = true
         }
+    }
+
+    // MARK: - Dedup helper
+
+    /// Returns true if the candidate matches an already-imported contact.
+    /// Checks email first, then falls back to normalized-digits phone.
+    private static func matchesExisting(
+        _ candidate: ImportCandidate,
+        emails: Set<String>,
+        phones: Set<String>
+    ) -> Bool {
+        if let email = candidate.email?.lowercased(), emails.contains(email) { return true }
+        if let phone = candidate.phone {
+            let digits = phone.filter(\.isNumber)
+            if !digits.isEmpty && phones.contains(digits) { return true }
+        }
+        return false
     }
 
     // MARK: - Device access
