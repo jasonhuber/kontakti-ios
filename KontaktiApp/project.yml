@@ -41,6 +41,7 @@ targets:
         CFBundleDisplayName: Kontakti
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: ""
         UIApplicationSceneManifest:
@@ -140,3 +141,57 @@ targets:
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
         SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+
+schemes:
+  KontaktiApp:
+    build:
+      targets:
+        KontaktiApp: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+  KontaktiShare:
+    build:
+      targets:
+        KontaktiShare: all
+        KontaktiApp: all
+    run:
+      config: Debug
+      executable: KontaktiApp
+      askForAppToLaunch: true
+      launchAutomaticallySubstyle: "2"
+    profile:
+      config: Release
+      executable: KontaktiApp
+      askForAppToLaunch: true
+      launchAutomaticallySubstyle: "2"
+    archive:
+      config: Release
+
+  KontaktiWidget:
+    build:
+      targets:
+        KontaktiWidget: all
+        KontaktiApp: all
+    run:
+      config: Debug
+      executable: KontaktiApp
+      askForAppToLaunch: true
+      launchAutomaticallySubstyle: "2"
+      environmentVariables:
+        _XCWidgetKind: ""
+        _XCWidgetDefaultView: timeline
+        _XCWidgetFamily: systemMedium
+    profile:
+      config: Release
+      executable: KontaktiApp
+      askForAppToLaunch: true
+      launchAutomaticallySubstyle: "2"
+    archive:
+      config: Release

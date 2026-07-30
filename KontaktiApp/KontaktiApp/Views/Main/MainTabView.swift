@@ -99,12 +99,20 @@ struct MainTabView: View {
             .tag(4)
 
             NavigationStack {
+                ProgressDashboardView()
+            }
+            .tabItem {
+                Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
+            }
+            .tag(5)
+
+            NavigationStack {
                 SettingsView()
             }
             .tabItem {
                 Label("Settings", systemImage: "gearshape")
             }
-            .tag(5)
+            .tag(6)
         }
         .tint(indigo)
         .overlay(alignment: .bottomTrailing) {

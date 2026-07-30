@@ -22,8 +22,19 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-        Task { await Self.requestAndRegister() }
+        Task { await Self.registerIfAuthorized() }
         return true
+    }
+
+    /// Re-register returning users without showing a permission prompt at launch.
+    static func registerIfAuthorized() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        guard settings.authorizationStatus == .authorized ||
+              settings.authorizationStatus == .provisional ||
+              settings.authorizationStatus == .ephemeral else { return }
+        await MainActor.run {
+            UIApplication.shared.registerForRemoteNotifications()
+        }
     }
 
     /// Public helper so Settings → "Enable notifications" toggle can re-run this.

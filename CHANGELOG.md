@@ -4,6 +4,25 @@ Notable changes to the SwiftUI iOS app. Most recent at top.
 
 ---
 
+## 2026-07-30
+
+### Progress, privacy, and release hardening
+
+- Shipped the native Progress dashboard and regenerated the Xcode project so its
+  models, view model, view, and tab are part of the build.
+- Added in-app account deletion with typed `DELETE` confirmation, local cache and
+  Keychain cleanup, plus Privacy, Terms, and Support links in Settings.
+- Removed Google as a primary login method on iOS; Google remains available after
+  login for optional Gmail and Contacts integration.
+- Added `PrivacyInfo.xcprivacy`, non-exempt-encryption metadata, and durable
+  XcodeGen definitions for all three shared schemes.
+- Stopped requesting notification permission at app launch. Returning authorized
+  users still re-register silently; new users opt in from Settings.
+- Verified a clean XcodeGen regeneration, simulator build, and launch on a fresh
+  iPhone 17 Pro simulator.
+
+---
+
 ## 2026-05-31
 
 ### QuizCard dark mode fix

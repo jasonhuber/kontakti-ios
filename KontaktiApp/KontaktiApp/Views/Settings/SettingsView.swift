@@ -5,6 +5,7 @@ struct SettingsView: View {
     @StateObject private var vm = SettingsViewModel()
     @EnvironmentObject private var authVM: AuthViewModel
     @ObservedObject private var importer = ContactsImporter.shared
+    @State private var showingDeleteAccount = false
 
     private let indigo = Color(red: 0.31, green: 0.27, blue: 0.90)
 
@@ -125,10 +126,24 @@ struct SettingsView: View {
 
             // MARK: Account
             Section {
+                Link(destination: URL(string: "https://kontakti.app/privacy.html")!) {
+                    Label("Privacy Policy", systemImage: "hand.raised")
+                }
+                Link(destination: URL(string: "https://kontakti.app/terms.html")!) {
+                    Label("Terms of Service", systemImage: "doc.text")
+                }
+                Link(destination: URL(string: "https://kontakti.app/support.html")!) {
+                    Label("Support", systemImage: "questionmark.circle")
+                }
                 Button(role: .destructive) {
                     Task { await authVM.logout() }
                 } label: {
                     Label("Sign out", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+                Button(role: .destructive) {
+                    showingDeleteAccount = true
+                } label: {
+                    Label("Delete account", systemImage: "trash")
                 }
             }
         }
@@ -137,6 +152,71 @@ struct SettingsView: View {
         .tint(indigo)
         .task { await vm.loadAccounts() }
         .refreshable { await vm.loadAccounts() }
+        .sheet(isPresented: $showingDeleteAccount) {
+            AccountDeletionSheet()
+                .environmentObject(authVM)
+        }
+    }
+}
+
+private struct AccountDeletionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var authVM: AuthViewModel
+    @State private var confirmation = ""
+    @State private var isDeleting = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("This permanently removes your account, contacts, notes, tasks, integrations, and uploaded photos. It cannot be undone.")
+                        .foregroundStyle(.secondary)
+                }
+                Section("Type DELETE to confirm") {
+                    TextField("DELETE", text: $confirmation)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                }
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage).foregroundStyle(.red)
+                    }
+                }
+                Section {
+                    Button(role: .destructive) {
+                        Task { await deleteAccount() }
+                    } label: {
+                        HStack {
+                            if isDeleting { ProgressView() }
+                            Text(isDeleting ? "Deleting…" : "Delete permanently")
+                        }
+                    }
+                    .disabled(confirmation != "DELETE" || isDeleting)
+                }
+            }
+            .navigationTitle("Delete account")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .disabled(isDeleting)
+                }
+            }
+            .interactiveDismissDisabled(isDeleting)
+        }
+    }
+
+    private func deleteAccount() async {
+        isDeleting = true
+        errorMessage = nil
+        do {
+            try await authVM.deleteAccount()
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+            isDeleting = false
+        }
     }
 }
 

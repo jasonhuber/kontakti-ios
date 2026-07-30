@@ -63,7 +63,7 @@ KontaktiApp/
 ├── Views/
 │   ├── Auth/                         LoginView, RegisterView
 │   ├── Onboarding/OnboardingView.swift   ← 4-step post-auth wizard
-│   ├── Main/MainTabView.swift            ← 6 tabs: Today / People / Companies / Discussions / Feed / Settings
+│   ├── Main/MainTabView.swift            ← 7 tabs including Progress and Settings
 │   ├── People/
 │   │   ├── PeopleListView.swift
 │   │   ├── PersonDetailView.swift        ← + AppleContactsWritebackSection
@@ -87,6 +87,12 @@ KontaktiApp/
 ├── Intents/                          KontaktiShortcutsProvider + LogVoiceMemoIntent (Siri)
 └── Info.plist
 ```
+
+Primary account login uses email and password. Google authorization is optional
+and is requested only for Gmail/Contacts features after account login.
+
+The app privacy manifest is `KontaktiApp/PrivacyInfo.xcprivacy`. Account deletion
+and Privacy/Terms/Support links are available in Settings.
 
 The Xcode project file is generated from `project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). Don't hand-edit `KontaktiApp.xcodeproj/project.pbxproj` — re-run `xcodegen generate` after adding a new file.
 

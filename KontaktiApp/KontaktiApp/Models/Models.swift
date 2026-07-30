@@ -14,6 +14,10 @@ struct GoogleLoginRequest: Encodable {
     }
 }
 
+struct DeleteAccountRequest: Encodable {
+    let confirmation: String
+}
+
 struct RegisterRequest: Encodable {
     let name: String
     let username: String

@@ -56,21 +56,26 @@ final class AuthViewModel: ObservableObject {
         await reconcileOnboardingStatus()
     }
 
-    func loginWithGoogle(presentingViewController: UIViewController) async throws {
-        let googleTokens = try await GoogleAuthService.shared.signInTokens(presentingViewController: presentingViewController)
-        let response = try await api.loginWithGoogle(idToken: googleTokens.idToken)
-        keychain.saveToken(response.token)
-        user = response.user
-        isAuthenticated = true
-        await reconcileOnboardingStatus()
-    }
-
     func logout() async {
         try? await api.logout()
         GoogleAuthService.shared.signOut()
         keychain.deleteToken()
         OfflineStore.shared.clearAll()
         user = nil
+        isAuthenticated = false
+    }
+
+    func deleteAccount() async throws {
+        try await api.deleteAccount()
+        GoogleAuthService.shared.signOut()
+        keychain.deleteToken()
+        OfflineStore.shared.clearAll()
+        if let userId = user?.id {
+            UserDefaults.standard.removeObject(forKey: "\(onboardingKey)_\(userId)")
+        }
+        UserDefaults.standard.removeObject(forKey: onboardingKey)
+        user = nil
+        needsOnboarding = true
         isAuthenticated = false
     }
 

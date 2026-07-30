@@ -199,6 +199,14 @@ final class APIClient {
         try await requestVoid("auth/logout", method: "POST")
     }
 
+    func deleteAccount() async throws {
+        try await requestVoid(
+            "auth/account",
+            method: "DELETE",
+            body: DeleteAccountRequest(confirmation: "DELETE")
+        )
+    }
+
     func me() async throws -> UserProfile {
         return try await request("auth/me")
     }
@@ -477,6 +485,11 @@ final class APIClient {
     // MARK: - Feed
     func getFeed() async throws -> [FeedItem] {
         return try await request("feed")
+    }
+
+    // MARK: - Gamification
+    func getGamificationDashboard() async throws -> GamificationDashboard {
+        return try await request("gamification/dashboard")
     }
 
     // MARK: - Search
