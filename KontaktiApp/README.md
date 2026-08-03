@@ -23,7 +23,7 @@ Native SwiftUI app for [Kontakti](https://kontakti.app) — personal relationshi
 | Offline sync | `SyncQueue` actor + `NetworkMonitor` (NWPathMonitor) |
 | Phone contacts | CNContactStore (read + writeback with diff-confirm) |
 | Gmail / Google Contacts | GoogleSignIn SDK + People API + Gmail API |
-| LinkedIn enrichment | WKWebView → page HTML → POST to `enrich.kontakti.app` (Ollama / phi4) |
+| LinkedIn enrichment | WKWebView -> page HTML -> `enrich.kontakti.app`; Lightning AI extraction with Ollama fallback |
 
 ---
 
@@ -95,6 +95,14 @@ The app privacy manifest is `KontaktiApp/PrivacyInfo.xcprivacy`. Account deletio
 and Privacy/Terms/Support links are available in Settings.
 
 The Xcode project file is generated from `project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). Don't hand-edit `KontaktiApp.xcodeproj/project.pbxproj` — re-run `xcodegen generate` after adding a new file.
+
+## App Store release
+
+The current submission is version 1.0, build 2. Listing copy, privacy answers,
+reviewer notes, and release notes are maintained in
+[`../STORE_SUBMISSION.md`](../STORE_SUBMISSION.md). `ExportOptions.plist` uploads
+an archive to TestFlight internal testing after the `app.kontakti` record exists
+in App Store Connect.
 
 ---
 

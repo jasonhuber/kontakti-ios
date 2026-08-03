@@ -4,6 +4,18 @@ Notable changes to the SwiftUI iOS app. Most recent at top.
 
 ---
 
+## 2026-08-02
+
+### Store submission build
+
+- Bumped the app, share extension, and widget to build 2 for the first
+  TestFlight submission.
+- Added the App Store metadata, privacy-answer worksheet, release notes, and
+  reviewer instructions in `STORE_SUBMISSION.md`.
+- Captured five authenticated iPhone 17 Pro screenshots using a seeded,
+  non-personal reviewer account.
+- Revalidated the Lightning-backed entity-extraction path used by voice memos.
+
 ## 2026-07-30
 
 ### Progress, privacy, and release hardening
